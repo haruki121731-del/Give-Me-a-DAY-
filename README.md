@@ -1,43 +1,52 @@
 # Give Me a DAY
 
-Give Me a DAY is a validation-first AI product for advanced system design.
+Give Me a DAY is a validate-then-operate system for investment strategies.
 
-It is built first for domains where polished code is not enough and real-world evidence matters.
+It internally researches, tests, compares, and rejects candidate directions, presents the 2 survivors to the user for approval, and upon approval operates the chosen strategy autonomously under predefined stop conditions.
+
+## Architecture
+
+![Give Me a DAY — Product Architecture](docs/assets/give-me-a-day-system-diagram-v2.svg)
+
+The system has three zones:
+
+**User Input** — A single natural-language investment goal. No prompt engineering required.
+
+**Internal Validation Engine** (hidden from user) — Domain Framing → Research Spec → Candidate Generation (3–5) → Evidence + Data Acquisition → Backtest + Statistical Testing → Audit / Rejection → Recommendation. The user does not see this process or its intermediate outputs.
+
+**User Output + Runtime** — Exactly 2 candidates (Primary + Alternative) with expected return bands, estimated max loss, confidence level, and key risks. Approval is mandatory before any runtime begins. v1 runtime is Paper Run only (no real money). Guardrails include max drawdown, consecutive underperformance, signal anomaly, and data quality failure stop conditions. Monthly reports and quarterly re-evaluation with three outcomes: continue, change (requires re-approval), or stop.
 
 ## First wedge
 
-The first wedge is:
-
-- investment research
-- strategy validation
-- hypothesis-testing pipelines
+- Investment research
+- Strategy validation
+- Hypothesis-testing pipelines
 
 ## What it does
 
-Give Me a DAY helps a user move from a high-level goal to a conditionally recommended system direction by doing more than generation.
-
-Its core value is:
-
-- defining what must be tested
-- specifying what evidence is required
-- structuring research and validation loops
-- generating multiple candidate system directions
-- comparing them honestly
-- rejecting weak approaches
-- returning a conditional recommendation with explicit unknowns and next steps
+- Receives a natural-language investment goal
+- Internally researches, tests, compares, and rejects candidate strategies
+- Presents 2 surviving candidates with return expectations, risks, and confidence
+- Requires explicit approval before operation
+- Operates via Paper Run (simulated, no real money in v1)
+- Monitors stop conditions and halts automatically when breached
+- Re-evaluates quarterly with fresh data
 
 ## What it is not
 
-Give Me a DAY is not:
+- A generic workflow automation tool
+- A broad “build anything with AI” product
+- A prompt helper or code generator
+- A robo-advisor that skips validation
+- A dashboard where users analyze backtests themselves
 
-- a generic workflow automation tool
-- a broad “build anything with AI” product
-- a prompt helper
-- a polished code generator masquerading as product strategy
+## Product truth
+
+**Give Me a DAY does not generate code. It generates validated direction.**
+
+All recommendations are conditional. All recommendations expire. No guaranteed outcomes.
 
 ## Source of truth
-
-Read these first:
 
 1. `CLAUDE.md` — Project identity and non-negotiables
 2. `docs/product/product_definition.md` — What the product is and does
@@ -46,8 +55,4 @@ Read these first:
 5. `docs/system/internal_schema.md` — All data structures
 6. `docs/system/execution_layer.md` — Data acquisition, backtests, Paper Run
 7. `docs/output/v1_output_spec.md` — User-facing outputs and runtime
-
-## Product truth
-
-**Give Me a DAY does not mainly generate code.  
-It generates validated direction.**
+8. `docs/assets/give-me-a-day-system-diagram-v2.svg` — Canonical architecture diagram

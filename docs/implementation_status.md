@@ -127,6 +127,7 @@ All Paper Run modules are placeholder directories only.
 - `api_data_flow.md` ↔ `persistence/audit_log.py`: Audit event format matches §7 ✅
 - `implementation_instructions.md` ↔ directory structure: Matches §4 ✅
 - `v1_boundary.md` ↔ scope: No out-of-scope features implemented ✅
+- Architecture diagram ↔ product_definition.md: Canonical diagram at `docs/assets/give-me-a-day-system-diagram-v2.svg` matches product architecture ✅
 
 ---
 
