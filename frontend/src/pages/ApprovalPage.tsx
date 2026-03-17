@@ -8,13 +8,17 @@ function ApprovalPage() {
   const candidateId = searchParams.get('candidate') || ''
   const navigate = useNavigate()
 
-  const [confirmed, setConfirmed] = useState(false)
+  const [risksReviewed, setRisksReviewed] = useState(false)
+  const [stopConditionsReviewed, setStopConditionsReviewed] = useState(false)
+  const [paperRunUnderstood, setPaperRunUnderstood] = useState(false)
   const [virtualCapital, setVirtualCapital] = useState(1000000)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const allConfirmed = risksReviewed && stopConditionsReviewed && paperRunUnderstood
+
   const handleApprove = async () => {
-    if (!runId || !candidateId) return
+    if (!runId || !candidateId || !allConfirmed) return
     setSubmitting(true)
     setError(null)
 
@@ -22,9 +26,9 @@ function ApprovalPage() {
       const res = await api.approveRun(runId, {
         candidate_id: candidateId,
         user_confirmations: {
-          risks_reviewed: true,
-          stop_conditions_reviewed: true,
-          paper_run_understood: true,
+          risks_reviewed: risksReviewed,
+          stop_conditions_reviewed: stopConditionsReviewed,
+          paper_run_understood: paperRunUnderstood,
         },
         virtual_capital: virtualCapital,
       })
@@ -76,18 +80,43 @@ function ApprovalPage() {
           <p className="text-xs text-gray-400 mt-1">デフォルト: ¥1,000,000</p>
         </div>
 
-        {/* Confirmation checkbox */}
-        <label className="flex items-start gap-3">
-          <input
-            type="checkbox"
-            checked={confirmed}
-            onChange={e => setConfirmed(e.target.checked)}
-            className="mt-1 rounded"
-          />
-          <span className="text-sm text-gray-700">
-            上記のリスクと停止条件を確認しました
-          </span>
-        </label>
+        {/* Triple confirmation gate */}
+        <div className="space-y-3">
+          <p className="text-sm font-medium text-gray-700">承認チェック（すべて必須）</p>
+          <label className="flex items-start gap-3">
+            <input
+              type="checkbox"
+              checked={risksReviewed}
+              onChange={e => setRisksReviewed(e.target.checked)}
+              className="mt-1 rounded"
+            />
+            <span className="text-sm text-gray-700">
+              この戦略のリスクを確認し、理解しました
+            </span>
+          </label>
+          <label className="flex items-start gap-3">
+            <input
+              type="checkbox"
+              checked={stopConditionsReviewed}
+              onChange={e => setStopConditionsReviewed(e.target.checked)}
+              className="mt-1 rounded"
+            />
+            <span className="text-sm text-gray-700">
+              停止条件を確認し、自動停止に同意します
+            </span>
+          </label>
+          <label className="flex items-start gap-3">
+            <input
+              type="checkbox"
+              checked={paperRunUnderstood}
+              onChange={e => setPaperRunUnderstood(e.target.checked)}
+              className="mt-1 rounded"
+            />
+            <span className="text-sm text-gray-700">
+              これはPaper Run（模擬運用）であり、実際のお金は使われないことを理解しました
+            </span>
+          </label>
+        </div>
 
         {error && (
           <div className="bg-red-50 text-red-700 p-3 rounded-lg text-sm">
@@ -98,7 +127,7 @@ function ApprovalPage() {
         {/* Approve button */}
         <button
           onClick={handleApprove}
-          disabled={!confirmed || submitting}
+          disabled={!allConfirmed || submitting}
           className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {submitting ? '処理中...' : 'この方向で模擬運用を開始 →'}

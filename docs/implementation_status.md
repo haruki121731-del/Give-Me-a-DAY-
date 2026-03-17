@@ -1,7 +1,7 @@
 # Give Me a DAY v1 — Implementation Status
 
 **Last updated**: 2026-03-17
-**Current round**: Round 2.5 (Decision System Layer) — COMPLETED
+**Current round**: Round 2.6 (Frontend Wiring + Architecture Alignment) — COMPLETED
 
 ---
 
@@ -55,6 +55,17 @@
 
 ---
 
+## Round 2.6: Frontend Wiring + Architecture Alignment — COMPLETED
+
+| Task | Status | Files |
+|------|--------|-------|
+| 2.6.1 LoadingPage alignment | ✅ Done | `frontend/src/pages/LoadingPage.tsx` — 8-step labels matching actual pipeline |
+| 2.6.2 ApprovalPage triple-confirm | ✅ Done | `frontend/src/pages/ApprovalPage.tsx` — 3 separate checkboxes (risks, stops, paper run) |
+| 2.6.3 Architecture PNG | ✅ Done | `docs/assets/give-me-a-day-system-diagram-v2.png` — PNG conversion from SVG |
+| 2.6.4 Image references | ✅ Done | README.md, implementation_status.md — updated to PNG path |
+
+---
+
 ## Round 3: Execution — NOT STARTED
 
 | Task | Status | Target |
@@ -89,7 +100,7 @@ All Paper Run modules are placeholder directories only.
 
 ---
 
-## What Works Now (Round 2.5)
+## What Works Now (Round 2.6)
 
 1. Backend starts: `uvicorn src.main:app`
 2. `GET /api/v1/health` returns 200
@@ -139,7 +150,7 @@ All Paper Run modules are placeholder directories only.
 - `api_data_flow.md` ↔ `persistence/audit_log.py`: Audit event format matches §7 ✅
 - `implementation_instructions.md` ↔ directory structure: Matches §4 ✅
 - `v1_boundary.md` ↔ scope: No out-of-scope features implemented ✅
-- Architecture diagram ↔ product_definition.md: Canonical diagram at `docs/assets/give-me-a-day-system-diagram-v2.svg` matches product architecture ✅
+- Architecture diagram ↔ product_definition.md: Canonical diagram at `docs/assets/give-me-a-day-system-diagram-v2.png` matches product architecture ✅
 
 ---
 

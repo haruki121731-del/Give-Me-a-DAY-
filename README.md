@@ -6,7 +6,7 @@ It internally researches, tests, compares, and rejects candidate directions, pre
 
 ## Architecture
 
-![Give Me a DAY — Product Architecture](docs/assets/give-me-a-day-system-diagram-v2.svg)
+![Give Me a DAY — Product Architecture](docs/assets/give-me-a-day-system-diagram-v2.png)
 
 The system has three zones:
 
@@ -55,4 +55,4 @@ All recommendations are conditional. All recommendations expire. No guaranteed o
 5. `docs/system/internal_schema.md` — All data structures
 6. `docs/system/execution_layer.md` — Data acquisition, backtests, Paper Run
 7. `docs/output/v1_output_spec.md` — User-facing outputs and runtime
-8. `docs/assets/give-me-a-day-system-diagram-v2.svg` — Canonical architecture diagram
+8. `docs/assets/give-me-a-day-system-diagram-v2.png` — Canonical architecture diagram
