@@ -2,6 +2,9 @@
 
 Give Me a DAY is a validation-first AI product for advanced system design.
 
+Its mission is to transform AI intelligence into real-world outputs that actually work for humans.
+Validation is the conversion layer between ideas and results, not an academic end in itself.
+
 It is built first for domains where polished code is not enough and real-world evidence matters.
 
 ## First wedge
@@ -50,4 +53,7 @@ Read these first:
 ## Product truth
 
 **Give Me a DAY does not mainly generate code.  
-It generates validated direction.**
+It generates validated direction that can be operated in reality.**
+
+In v1, investment is the first high-signal domain pack.
+The longer-term product identity is broader: a validation engine that gets better over time at producing successful real-world outputs as outcomes accumulate.
