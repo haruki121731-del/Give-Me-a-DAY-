@@ -31,12 +31,16 @@ def test_execution_artifacts_are_persisted(tmp_data_dir):
 
     meta = store.load_run_meta(run_id)
     assert meta["status"] == "completed"
-    assert meta["steps_total"] == 10
+    assert meta["steps_total"] == 12
 
-    dq_reports = store.load_all_candidate_objects(run_id, "data_quality_reports")
+    dq_reports = store.load_all_candidate_objects(run_id, "quality_reports")
     test_results = store.load_all_candidate_objects(run_id, "test_results")
     cmp_res = store.load_run_object(run_id, "comparison_result")
+    cards = store.load_presentation(run_id, "candidate_cards.json")
+    context = store.load_presentation(run_id, "presentation_context.json")
 
     assert len(dq_reports) >= 3
     assert len(test_results) >= 3
     assert "comparison_matrix" in cmp_res
+    assert len(cards) <= 2
+    assert "validation_summary" in context

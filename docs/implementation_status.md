@@ -1,7 +1,7 @@
 # Give Me a DAY v1 — Implementation Status
 
-**Last updated**: 2026-03-17
-**Current round**: Round 3 (Execution Layer) — COMPLETED
+**Last updated**: 2026-03-18
+**Current round**: Companion AI v1 + Round 3 execution layer — COMPLETED
 
 ---
 
@@ -41,34 +41,98 @@
 
 ---
 
-## Round 3: Execution — COMPLETED
+## Round 2.5: Decision System Layer — COMPLETED
 
 | Task | Status | Files |
 |------|--------|-------|
-| 3.1 DataAcquisition module | ✅ Done | `execution/data_acquisition.py` (yfinance daily OHLCV + synthetic fallback + quality checks) |
-| 3.2 BacktestEngine | ✅ Done | `execution/backtest_engine.py` (vectorized daily-bar momentum/factor-style, monthly rebalance, fixed cost model) |
-| 3.3 StatisticalTestSuite | ✅ Done | `execution/statistical_tests.py` (t-test, Sharpe significance, 70/30 in-sample/out-of-sample split) |
-| 3.4 ComparisonEngine | ✅ Done | `execution/comparison_engine.py` (cross-candidate comparison matrix + ranking) |
-| 3.5 PaperRunEngine (daily cycle core) | ✅ Done | `execution/paper_run_engine.py` (daily mark-to-market + stop condition evaluation) |
-| 3.6 ExecutionLayer integration | ✅ Done | `pipeline/orchestrator.py` (Execution steps inserted after validation planning) |
-| 3.7 Frontend loading flow update | ✅ Done | `frontend/src/pages/LoadingPage.tsx` (10-step progress aligned to orchestrator flow) |
-| 3.8 Execution tests | ✅ Done | `backend/tests/test_*execution*.py` and module-specific tests |
+| 2.5.1 RecommendationEngine | ✅ Done | `pipeline/recommendation_engine.py` — scoring (burden + coverage + risk balance + type bonus), ranking, confidence capped at MEDIUM |
+| 2.5.2 PresentationBuilder | ✅ Done | `pipeline/presentation_builder.py` — CandidateCards (exactly 2), PresentationContext, Markdown export |
+| 2.5.3 ApprovalController | ✅ Done | `pipeline/approval_controller.py` — triple-confirmation gate, candidate validation against recommendation |
+| 2.5.4 RuntimeController | ✅ Done | `pipeline/runtime_controller.py` — Paper Run state initialization (contract only, no execution) |
+| 2.5.5 Orchestrator update | ✅ Done | `pipeline/orchestrator.py` — Steps 7-8 (Recommendation → Presentation), 8-step pipeline |
+| 2.5.6 API wiring | ✅ Done | `api/routes.py` — real POST /approve with approval + Paper Run init, GET /result + GET /export work |
+| 2.5.7 Tests | ✅ Done | 36 new tests (92 total), all passing |
 
 ---
 
-## Round 4: Judgment — NOT STARTED
+## Round 2.6: Frontend Wiring + Architecture Alignment — COMPLETED
+
+| Task | Status | Files |
+|------|--------|-------|
+| 2.6.1 LoadingPage alignment | ✅ Done | `frontend/src/pages/LoadingPage.tsx` — loading labels aligned to the actual pipeline |
+| 2.6.2 ApprovalPage triple-confirm | ✅ Done | `frontend/src/pages/ApprovalPage.tsx` — 3 separate checkboxes (risks, stops, paper run) |
+| 2.6.3 Architecture PNG | ✅ Done | `docs/assets/give-me-a-day-system-diagram-v2.png` — PNG conversion from SVG |
+| 2.6.4 Image references | ✅ Done | README.md, implementation_status.md — updated to PNG path |
+
+---
+
+## Round 3: Execution Layer — COMPLETED
+
+| Task | Status | Files |
+|------|--------|-------|
+| 3.1 DataAcquisition | ✅ Done | `execution/data_acquisition.py` — yfinance + synthetic fallback, quality checks (completeness, consistency, temporal) |
+| 3.2 BacktestEngine | ✅ Done | `execution/backtest_engine.py` — daily-bar, momentum signal, monthly rebalance, 20bps cost model |
+| 3.3 StatisticalTests | ✅ Done | `execution/statistical_tests.py` — t-test, Sharpe significance (Lo 2002), IS/OOS comparison |
+| 3.4 ComparisonEngine | ✅ Done | `execution/comparison_engine.py` — metric comparison matrix, rejection detection, composite ranking |
+| 3.5 PaperRunEngine | ✅ Done | `execution/paper_run_engine.py` — daily update, stop condition evaluation (SC-01 to SC-04) |
+| 3.6 Orchestrator update | ✅ Done | `pipeline/orchestrator.py` — 12-step pipeline with execution fallback |
+| 3.7 Tests | ✅ Done | Execution layer covered in the merged backend suite; backend tests pass locally |
+
+---
+
+## Round 4: Judgment — PARTIALLY COMPLETE
 
 | Task | Status | Target |
 |------|--------|--------|
 | 4.1 AuditEngine | ❌ Not started | Apply audit rubric to test results |
-| 4.2 RecommendationEngine | ❌ Not started | Primary/runner-up/rejected with conditions |
-| 4.3 ReportingEngine | ❌ Not started | CandidateCards, PresentationContext, Markdown export |
+| 4.2 RecommendationEngine | ✅ Done (Round 2.5) | `pipeline/recommendation_engine.py` |
+| 4.3 ReportingEngine | ✅ Done (Round 2.5) | `pipeline/presentation_builder.py` |
 
 ---
 
-## Round 5: User-Facing — NOT STARTED
+## Round 5: User-Facing — PARTIALLY COMPLETE
 
-Frontend pages exist as minimal stubs. API endpoints exist as routing stubs.
+Goal intake, loading, approval, result, and Companion disclosure flows exist. Runtime status/reporting and re-evaluation UX remain partial.
+
+---
+
+## Companion AI v1 — COMPLETED
+
+**Last updated**: 2026-03-18
+
+| Task | Status | Files |
+|------|--------|-------|
+| C.1 Companion module | ✅ Done | `companion/__init__.py`, `companion/models.py` — all 7 schema objects |
+| C.2 Trigger evaluator | ✅ Done | `companion/trigger_evaluator.py` — T1–T7, needs_clarification gate |
+| C.3 Contradiction detector | ✅ Done | `companion/contradiction_detector.py` — CON-01 to CON-06 |
+| C.4 Constraint inferrer | ✅ Done | `companion/constraint_inferrer.py` — pattern-based risk/time/success inference |
+| C.5 Question builder | ✅ Done | `companion/question_builder.py` — Q-SUCCESS, Q-RISK, Q-TIME, Q-SCOPE, Q-REFINE |
+| C.6 Approval context builder | ✅ Done | `companion/approval_context_builder.py` — full disclosure generation |
+| C.7 Domain model extension | ✅ Done | `domain/models.py` — `companion_context: Optional[dict]` on UserIntent + Approval (trace-only) |
+| C.8 API schemas | ✅ Done | `api/schemas.py` — PreflightRequest/Response, PreflightSubmitRequest/Response |
+| C.9 API endpoints | ✅ Done | `api/routes.py` — `POST /runs/preflight`, `POST /runs/preflight/submit`, `GET /runs/{id}/approval-context` |
+| C.10 Frontend API client | ✅ Done | `frontend/src/api/client.ts` — preflightGoal, preflightSubmit, getApprovalContext |
+| C.11 InputPage preflight flow | ✅ Done | `frontend/src/pages/InputPage.tsx` — 3-stage flow (input → clarification → review) |
+| C.12 ApprovalPage disclosure | ✅ Done | `frontend/src/pages/ApprovalPage.tsx` — authority disclosure, KPI alignment, stop translations, comprehension check |
+| C.13 Tests | ✅ Done | Companion AI coverage is included in the merged backend suite; backend tests pass locally |
+
+**What Companion AI v1 does:**
+- Evaluates goal completeness on `/preflight` before pipeline starts
+- Asks ≤4 clarifying questions if triggers T1–T7 fire; stays silent if goal is complete
+- Surfaces CON-01 to CON-06 contradictions as notices (non-blocking) before questions
+- Infers `risk_preference`, `time_horizon_preference`, `success_definition` from free-text answers (pattern-based only)
+- Shows user an inference review step before pipeline submission
+- At Approval Gate: generates authority disclosure, KPI alignment check, plain-language stop condition translations, risk annotations, data access disclosure, Paper Run explanation
+- Requires one comprehension check (SC-01 scenario) before checkboxes are enabled
+- `companion_context` field is trace-only — pipeline logic never reads it
+
+**What Companion AI v1 does NOT do (intentionally out of scope):**
+- No LLM inference
+- No session memory
+- No generic chat behavior
+- No changes to recommendation, execution, or stop-condition logic
+- No involvement in pipeline steps 2–9
+- No expert-user shortcuts or skip logic
 
 ---
 
@@ -78,32 +142,28 @@ Paper Run full scheduler/reporting loop remains pending; daily mark-to-market + 
 
 ---
 
-## What Works Now (through Round 3)
+## What Works Now (Companion AI v1 + Round 3)
 
 1. Backend starts: `uvicorn src.main:app`
-2. `GET /api/v1/health` returns 200
-3. `POST /api/v1/runs` accepts a goal and runs full planning pipeline
-4. `GET /api/v1/runs/{id}/status` returns run status with step progress
-5. `GET /api/v1/runs/{id}/planning` returns planning results (domain_frame, research_spec, candidates, evidence_plans, validation_plans)
-6. Pipeline runs GoalIntake → DomainFramer → ResearchSpecCompiler → CandidateGenerator → EvidencePlanner → ValidationPlanner
-7. LLM-unavailable fallback: all modules produce valid output using archetype-specific templates
-8. DomainFramer classifies archetype and generates testable claims with falsification conditions
-9. ResearchSpecCompiler derives evidence standard, assumption space, and disqualifying failures
-10. CandidateGenerator produces 3 candidates (baseline/conservative/exploratory) with diversity enforcement
-11. EvidencePlanner identifies required/optional/proxy evidence with LKG-07 leakage rules
-12. ValidationPlanner creates 4-5 test plans with failure conditions and prerequisites
-13. Round 3 execution pipeline (data acquisition → backtest → statistical tests → comparison) runs and persists execution artifacts
-14. All 62 tests pass
+2. `POST /api/v1/runs` runs full 12-step pipeline (planning + execution)
+3. Pipeline: GoalIntake → DomainFramer → ResearchSpecCompiler → CandidateGenerator → EvidencePlanner → ValidationPlanner → DataAcquisition → Backtest → StatisticalTests → Comparison → RecommendationEngine → PresentationBuilder
+4. DataAcquisition: yfinance with synthetic fallback, 5 quality checks
+5. BacktestEngine: daily-bar momentum, monthly rebalance, 20bps cost model, 5 performance metrics
+6. StatisticalTests: t-test, Sharpe significance, IS/OOS overfitting detection
+7. ComparisonEngine: cross-candidate metric matrix, rejection detection, composite ranking
+8. PaperRunEngine: daily mark-to-market update, 4 stop conditions (drawdown, underperf, anomaly, data quality)
+9. Execution gracefully falls back to planning-only mode if data unavailable
+10. Approval gate, presentation, export, and Companion disclosure flows continue working
+11. Backend test suite passes locally: 260 tests passing
 
 ## What Does NOT Work Yet
 
 - No actual LLM calls (works via fallback templates; Claude API ready but untested with live key)
-- No audit or recommendation logic
-- No CandidateCard generation
-- No full Paper Run scheduler/reporting lifecycle in API/runtime flow (daily PaperRunEngine core exists)
-- Frontend pages beyond InputPage are visual stubs only
-- Approval endpoint creates IDs but does not create real Approval/PaperRunState objects
-- GET /runs/{id}/result still expects presentation objects (Round 4+)
+- No audit engine (full realization with execution-informed severity adjustment)
+- No automated Paper Run daily scheduler (manual update function exists)
+- No notification system (halt events logged but not pushed)
+- No quarterly re-evaluation automation
+- Frontend StatusPage shows initial state only (no background updates)
 
 ---
 
@@ -111,10 +171,11 @@ Paper Run full scheduler/reporting loop remains pending; daily mark-to-market + 
 
 | File | What's Stubbed | Round Target |
 |------|---------------|-------------|
-| `pipeline/orchestrator.py` | Audit/Recommendation/Reporting stages after execution | Round 4-5 |
-| `api/routes.py` GET /result | Expects presentation objects not yet generated | Round 4 |
-| `api/routes.py` POST /approve | Returns placeholder IDs, no real Approval | Round 5 |
-| `api/routes.py` paper-run endpoints | Return placeholder data | Round 6 |
+| `api/routes.py` POST /paper-runs/{id}/stop | Updates status but no real portfolio unwinding | Round 4+ |
+| `api/routes.py` POST /paper-runs/{id}/re-approve | Returns placeholder IDs | Round 4+ |
+| `execution/paper_run_engine.py` | Daily scheduler not wired (function exists, no cron) | Round 4+ |
+| Notification system | Halt events logged, not pushed to user | Round 4+ |
+| Re-evaluation runner | Interface defined, not automated | Round 4+ |
 
 ---
 
@@ -128,6 +189,7 @@ Paper Run full scheduler/reporting loop remains pending; daily mark-to-market + 
 - `api_data_flow.md` ↔ `persistence/audit_log.py`: Audit event format matches §7 ✅
 - `implementation_instructions.md` ↔ directory structure: Matches §4 ✅
 - `v1_boundary.md` ↔ scope: No out-of-scope features implemented ✅
+- Architecture diagram ↔ product_definition.md: Canonical diagram at `docs/assets/give-me-a-day-system-diagram-v2.png` matches product architecture ✅
 
 ---
 
@@ -136,9 +198,9 @@ Paper Run full scheduler/reporting loop remains pending; daily mark-to-market + 
 - ❌ No generic workflow automation abstractions
 - ❌ No "build any app" language in code or comments
 - ❌ No v2 features implemented
-- ⚠️ Source of truth documents have targeted wording updates for product-thesis clarity (no v1 scope expansion)
-- ❌ No execution/audit/recommendation implemented (correctly deferred to Round 3+)
+- ⚠️ Source of truth documents have targeted wording and Companion updates; no v1 scope expansion
+- ✅ Execution engine is implemented within v1 scope (data acquisition, backtest, statistics, comparison, Paper Run core)
 - ✅ All fallbacks are investment-research specific (not generic)
 - ✅ All prompts are investment-research specific (not generic)
 - ✅ Rejection logic is structural: failure conditions on every test, falsification on every claim
-- ✅ Product identity preserved: validation-first, investment-first in v1, with outcome-oriented direction intact
+- ✅ Product identity preserved: validation-first, investment-first in v1, with Companion AI kept narrow and trace-only

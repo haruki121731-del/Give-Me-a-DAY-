@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 900" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0f1923"/>
+      <stop offset="100%" stop-color="#1a2634"/>
+    </linearGradient>
+    <linearGradient id="engineGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e2d3d"/>
+      <stop offset="100%" stop-color="#162230"/>
+    </linearGradient>
+    <linearGradient id="btnGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#d4a843"/>
+      <stop offset="100%" stop-color="#c4963a"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1400" height="900" fill="url(#bgGrad)"/>
+
+  <!-- Title -->
+  <text x="700" y="42" text-anchor="middle" fill="#e8d5a8" font-size="28" font-weight="300" letter-spacing="2">Give Me a DAY</text>
+  <text x="700" y="68" text-anchor="middle" fill="#8899aa" font-size="14" font-weight="400">Product Architecture Diagram</text>
+
+  <!-- Column Headers -->
+  <text x="115" y="100" text-anchor="middle" fill="#667788" font-size="11" font-weight="600" letter-spacing="1">USER INPUT</text>
+  <text x="480" y="100" text-anchor="middle" fill="#667788" font-size="11" font-weight="600" letter-spacing="1">~5–10 min</text>
+  <text x="1100" y="100" text-anchor="middle" fill="#667788" font-size="11" font-weight="600" letter-spacing="1">USER OUTPUT + RUNTIME</text>
+
+  <!-- Divider lines -->
+  <line x1="220" y1="90" x2="220" y2="880" stroke="#2a3a4a" stroke-width="1" stroke-dasharray="4,4"/>
+  <line x1="780" y1="90" x2="780" y2="880" stroke="#2a3a4a" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- ==================== USER INPUT ==================== -->
+  <text x="75" y="145" fill="#c8b87a" font-size="12" font-weight="600">INVESTMENT GOAL</text>
+  <rect x="35" y="158" width="175" height="65" rx="6" fill="#2a3545" stroke="#3a4a5a" stroke-width="1" filter="url(#shadow)"/>
+  <text x="50" y="178" fill="#99aabb" font-size="10" font-style="italic">I want to build a</text>
+  <text x="50" y="193" fill="#99aabb" font-size="10" font-style="italic">momentum strategy</text>
+  <text x="50" y="208" fill="#99aabb" font-size="10" font-style="italic">for Japanese equities.</text>
+
+  <!-- Arrow from input to engine -->
+  <line x1="210" y1="190" x2="250" y2="190" stroke="#4a6a5a" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <defs>
+    <marker id="arrowGreen" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#5a8a6a"/>
+    </marker>
+    <marker id="arrowGray" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#4a6a8a"/>
+    </marker>
+  </defs>
+
+  <!-- ==================== INTERNAL VALIDATION ENGINE ==================== -->
+  <rect x="250" y="115" width="510" height="680" rx="8" fill="url(#engineGrad)" stroke="#2a4a5a" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="270" y="140" fill="#7ab8d4" font-size="13" font-weight="600">INTERNAL VALIDATION ENGINE</text>
+  <text x="731" y="138" fill="#5a7a8a" font-size="10">🔒</text>
+
+  <!-- Step 1: Domain Framing -->
+  <rect x="295" y="160" width="420" height="55" rx="5" fill="#243340" stroke="#2a4a5a" stroke-width="1"/>
+  <text x="315" y="183" fill="#e8e8e8" font-size="13" font-weight="600">Domain Framing</text>
+  <text x="315" y="200" fill="#7a8a9a" font-size="10">classify goal, extract testable claims</text>
+  <line x1="505" y1="215" x2="505" y2="230" stroke="#3a5a6a" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+
+  <!-- Step 2: Research Spec -->
+  <rect x="295" y="232" width="420" height="55" rx="5" fill="#243340" stroke="#2a4a5a" stroke-width="1"/>
+  <text x="315" y="255" fill="#e8e8e8" font-size="13" font-weight="600">Research Spec</text>
+  <text x="315" y="272" fill="#7a8a9a" font-size="10">evidence requirements, failure conditions</text>
+  <line x1="505" y1="287" x2="505" y2="302" stroke="#3a5a6a" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+
+  <!-- Step 3: Candidate Generation -->
+  <rect x="295" y="304" width="420" height="55" rx="5" fill="#243340" stroke="#2a4a5a" stroke-width="1"/>
+  <text x="315" y="327" fill="#e8e8e8" font-size="13" font-weight="600">Candidate Generation ×3–5</text>
+  <text x="315" y="344" fill="#7a8a9a" font-size="10">Baseline / Conservative / Exploratory</text>
+  <line x1="505" y1="359" x2="505" y2="374" stroke="#3a5a6a" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+
+  <!-- Step 4: Evidence + Data -->
+  <rect x="295" y="376" width="420" height="55" rx="5" fill="#243340" stroke="#2a4a5a" stroke-width="1"/>
+  <text x="315" y="399" fill="#e8e8e8" font-size="13" font-weight="600">Evidence + Data Acquisition</text>
+  <text x="315" y="416" fill="#7a8a9a" font-size="10">public APIs, quality checks</text>
+  <line x1="505" y1="431" x2="505" y2="446" stroke="#3a5a6a" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+
+  <!-- Step 5: Backtest -->
+  <rect x="295" y="448" width="420" height="55" rx="5" fill="#243340" stroke="#2a4a5a" stroke-width="1"/>
+  <text x="315" y="471" fill="#e8e8e8" font-size="13" font-weight="600">Backtest + Statistical Testing</text>
+  <text x="315" y="488" fill="#7a8a9a" font-size="10">20yr daily data, walk-forward, regime split</text>
+  <line x1="505" y1="503" x2="505" y2="518" stroke="#3a5a6a" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+
+  <!-- Step 6: Audit -->
+  <rect x="295" y="520" width="420" height="55" rx="5" fill="#243340" stroke="#2a4a5a" stroke-width="1"/>
+  <text x="315" y="543" fill="#e8e8e8" font-size="13" font-weight="600">Audit / Rejection</text>
+  <text x="315" y="560" fill="#7a8a9a" font-size="10">disqualifying issues detected</text>
+  <line x1="505" y1="575" x2="505" y2="590" stroke="#3a5a6a" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+
+  <!-- Step 7: Recommendation -->
+  <rect x="295" y="592" width="420" height="55" rx="5" fill="#243340" stroke="#2a4a5a" stroke-width="1"/>
+  <text x="315" y="615" fill="#e8e8e8" font-size="13" font-weight="600">Recommendation</text>
+  <text x="315" y="632" fill="#7a8a9a" font-size="10">Primary + Alternative selected mechanically</text>
+
+  <!-- Arrow from engine to candidate cards -->
+  <line x1="715" y1="330" x2="795" y2="230" stroke="#4a6a5a" stroke-width="1.5" marker-end="url(#arrowGreen)"/>
+
+  <!-- ==================== CANDIDATE PRESENTATION ==================== -->
+  <text x="810" y="140" fill="#8899aa" font-size="12" font-weight="600">CANDIDATE PRESENTATION</text>
+
+  <!-- Primary Card -->
+  <rect x="810" y="155" width="250" height="195" rx="6" fill="#243340" stroke="#3a5a6a" stroke-width="1" filter="url(#shadow)"/>
+  <text x="842" y="178" fill="#d4a843" font-size="11" font-weight="700">★  PRIMARY</text>
+  <rect x="825" y="190" width="220" height="80" rx="4" fill="#1e2d3d"/>
+  <text x="840" y="212" fill="#d4c89a" font-size="12" font-weight="600">12-Month Momentum</text>
+  <text x="840" y="228" fill="#d4c89a" font-size="12" font-weight="600">× Equal Weight</text>
+  <text x="840" y="248" fill="#6aaa7a" font-size="11">+4% to +11% yr</text>
+  <text x="840" y="263" fill="#aa6a6a" font-size="11">−18% to −27%</text>
+  <rect x="825" y="278" width="120" height="22" rx="4" fill="#2a3a4a" stroke="#3a5a6a" stroke-width="0.5"/>
+  <text x="850" y="293" fill="#8899aa" font-size="10">Confidence Medium</text>
+  <text x="825" y="328" fill="#7a8a9a" font-size="10">High-level risks</text>
+
+  <!-- Alternative Card -->
+  <rect x="1080" y="155" width="250" height="195" rx="6" fill="#243340" stroke="#3a5a6a" stroke-width="1" filter="url(#shadow)"/>
+  <text x="1112" y="178" fill="#6ab8d4" font-size="11" font-weight="700">↻  ALTERNATIVE</text>
+  <rect x="1095" y="190" width="220" height="80" rx="4" fill="#1e2d3d"/>
+  <text x="1110" y="212" fill="#8ab8d4" font-size="12" font-weight="600">Trend × Value-Mix</text>
+  <text x="1110" y="232" fill="#6aaa7a" font-size="11">+4% to +9% yr</text>
+  <text x="1110" y="247" fill="#aa6a6a" font-size="11">−16% to −25%</text>
+  <rect x="1095" y="278" width="120" height="22" rx="4" fill="#2a3a4a" stroke="#3a5a6a" stroke-width="0.5"/>
+  <text x="1120" y="293" fill="#8899aa" font-size="10">Confidence Medium</text>
+  <text x="1095" y="328" fill="#7a8a9a" font-size="10">High-level risks</text>
+
+  <!-- Rejection feedback loop -->
+  <text x="930" y="390" fill="#7a5a5a" font-size="9" font-style="italic">if all rejected: regenerate once</text>
+  <path d="M1330,350 C1350,350 1360,400 1350,430 L1340,460" stroke="#5a3a3a" stroke-width="1" fill="none" stroke-dasharray="4,3"/>
+
+  <!-- ==================== APPROVAL GATE ==================== -->
+  <text x="810" y="430" fill="#8899aa" font-size="12" font-weight="600">APPROVAL GATE</text>
+  <rect x="810" y="445" width="380" height="130" rx="6" fill="#243340" stroke="#3a5a6a" stroke-width="1" filter="url(#shadow)"/>
+
+  <!-- Paper Run status -->
+  <circle cx="835" cy="475" r="6" fill="#5aaa6a"/>
+  <text x="850" y="480" fill="#e8e8e8" font-size="13" font-weight="600">Paper Run</text>
+  <text x="850" y="498" fill="#7a8a9a" font-size="10">12-Month Momentum × Equal Weight</text>
+  <text x="850" y="516" fill="#7a8a9a" font-size="10">Day 03 ————————  All clear</text>
+
+  <!-- Begin Paper Run button -->
+  <rect x="850" y="535" width="250" height="32" rx="5" fill="url(#btnGrad)" filter="url(#shadow)"/>
+  <text x="975" y="556" text-anchor="middle" fill="#1a1a1a" font-size="13" font-weight="700">Begin Paper Run →</text>
+
+  <!-- ==================== GUARDRAILS ==================== -->
+  <rect x="1210" y="430" width="160" height="165" rx="6" fill="#3a2020" stroke="#5a3030" stroke-width="1" filter="url(#shadow)"/>
+  <text x="1230" y="455" fill="#cc6666" font-size="12" font-weight="700">GUARDRAILS</text>
+
+  <circle cx="1230" cy="478" r="5" fill="#cc4444"/>
+  <text x="1242" y="483" fill="#ccaaaa" font-size="9">Monthly report</text>
+
+  <circle cx="1230" cy="500" r="5" fill="#cc8844"/>
+  <text x="1242" y="505" fill="#ccaaaa" font-size="9">Continue</text>
+
+  <circle cx="1230" cy="522" r="5" fill="#cc4444"/>
+  <text x="1242" y="527" fill="#ccaaaa" font-size="9">Change</text>
+
+  <circle cx="1230" cy="544" r="5" fill="#cc4444"/>
+  <text x="1242" y="549" fill="#ccaaaa" font-size="9">Stop All</text>
+
+  <circle cx="1230" cy="572" r="5" fill="#884444"/>
+  <text x="1242" y="577" fill="#ccaaaa" font-size="9">Time-sourcing</text>
+
+  <!-- ==================== FOOTER NOTE ==================== -->
+  <text x="700" y="860" text-anchor="middle" fill="#445566" font-size="10">v1: Paper Run only — no real-money execution  |  Internal engine hidden from user  |  All recommendations are conditional</text>
+
+</svg>
