@@ -7,6 +7,7 @@ These are the API boundary types, separate from internal domain models.
 from typing import Optional
 
 from pydantic import BaseModel, Field
+from src.companion.models import ApprovalContext, CompanionGoalResponse
 
 
 # ---- Request schemas ----
@@ -70,3 +71,33 @@ class StopResponse(BaseModel):
 class ReApproveResponse(BaseModel):
     new_approval_id: str
     status: str
+
+
+# ---- Companion AI schemas ----
+
+class PreflightRequest(BaseModel):
+    goal: str = Field(min_length=1)
+    success_criteria: Optional[str] = None
+    risk: Optional[str] = None
+    time_horizon: Optional[str] = None
+    exclusions: list[str] = Field(default_factory=list)
+
+
+# PreflightResponse wraps CompanionGoalResponse directly
+PreflightResponse = CompanionGoalResponse
+
+
+class PreflightSubmitRequest(BaseModel):
+    original_request: CreateRunRequest
+    answers: dict[str, str]  # question_id -> answer text
+
+
+class PreflightSubmitResponse(BaseModel):
+    refined_request: CreateRunRequest
+    inference_summary: list[dict]   # [{field, inferred_value, from_text}]
+    open_uncertainties: list[str]
+    kpi_anchor: Optional[str] = None
+
+
+# ApprovalContextResponse wraps ApprovalContext directly
+ApprovalContextResponse = ApprovalContext

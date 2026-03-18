@@ -17,11 +17,20 @@ from src.api.schemas import (
     CreateRunRequest,
     CreateRunResponse,
     PaperRunStatusResponse,
+    PreflightRequest,
+    PreflightSubmitRequest,
+    PreflightSubmitResponse,
     ReApproveRequest,
     ReApproveResponse,
     RunStatusResponse,
     StopResponse,
 )
+from src.companion.approval_context_builder import build_approval_context
+from src.companion.constraint_inferrer import apply_answers
+from src.companion.contradiction_detector import detect_contradictions
+from src.companion.models import ApprovalContext, CompanionGoalResponse
+from src.companion.question_builder import build_questions
+from src.companion.trigger_evaluator import evaluate_triggers, needs_clarification
 from src.domain.models import AuditEvent, RunMeta, RunStatus
 from src.pipeline.orchestrator import execute_pipeline
 
@@ -33,6 +42,123 @@ router = APIRouter()
 @router.get("/health")
 def health_check():
     return {"status": "ok", "service": "give-me-a-day", "version": "1.0.0"}
+
+
+# ---- Companion AI endpoints ----
+
+@router.post("/runs/preflight", response_model=CompanionGoalResponse)
+def preflight_goal(request: PreflightRequest):
+    """
+    Evaluate a goal before submission.
+    Returns trigger evaluation, contradiction notices, and clarification questions.
+    No run is created. Preflight is optional — clients may skip to POST /runs directly.
+    """
+    contradictions = detect_contradictions(
+        raw_goal=request.goal,
+        success_criteria=request.success_criteria,
+        risk=request.risk,
+        time_horizon=request.time_horizon,
+        must_not_do=request.exclusions,
+    )
+    trigger_result = evaluate_triggers(
+        goal=request.goal,
+        success_criteria=request.success_criteria,
+        risk=request.risk,
+        time_horizon=request.time_horizon,
+    )
+    questions = build_questions(trigger_result)
+    clarification_needed = needs_clarification(trigger_result, contradictions)
+
+    # Inferences from known fields (no answers yet — surface what was already provided)
+    inferences: list[dict] = []
+    if request.risk:
+        inferences.append({"field": "risk_preference", "from_text": request.risk,
+                            "inferred_value": request.risk})
+    if request.time_horizon:
+        inferences.append({"field": "time_horizon_preference", "from_text": request.time_horizon,
+                            "inferred_value": request.time_horizon})
+
+    return CompanionGoalResponse(
+        needs_clarification=clarification_needed,
+        questions=questions,
+        contradictions=contradictions,
+        inferences=inferences,
+    )
+
+
+@router.post("/runs/preflight/submit", response_model=PreflightSubmitResponse)
+def preflight_submit(request: PreflightSubmitRequest):
+    """
+    Ingest answers to clarification questions and return a refined CreateRunRequest.
+    No run is created. Client reviews the inference summary, then calls POST /runs.
+    """
+    inference = apply_answers(
+        answers=request.answers,
+        existing_risk=request.original_request.risk,
+        existing_time_horizon=request.original_request.time_horizon,
+        existing_success_criteria=request.original_request.success_criteria,
+    )
+
+    # Build refined request
+    refined = CreateRunRequest(
+        goal=request.original_request.goal,
+        success_criteria=inference.success_definition or request.original_request.success_criteria,
+        risk=inference.risk_preference or request.original_request.risk,
+        time_horizon=inference.time_horizon_preference or request.original_request.time_horizon,
+        exclusions=request.original_request.exclusions,
+    )
+
+    return PreflightSubmitResponse(
+        refined_request=refined,
+        inference_summary=inference.inferences_made,
+        open_uncertainties=inference.open_uncertainties,
+        kpi_anchor=inference.kpi_anchor,
+    )
+
+
+@router.get("/runs/{run_id}/approval-context", response_model=ApprovalContext)
+def get_approval_context(run_id: str, candidate_id: str, virtual_capital: float = 1_000_000):
+    """
+    Return Companion AI approval disclosure content for a specific candidate.
+    Called when ApprovalPage loads — before the user clicks Approve.
+    """
+    store = get_store()
+    if not store.run_exists(run_id):
+        raise HTTPException(status_code=404, detail="Run not found")
+
+    # Load candidate cards
+    try:
+        candidate_cards = store.load_presentation(run_id, "candidate_cards.json")
+        if not isinstance(candidate_cards, list):
+            candidate_cards = [candidate_cards]
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Candidate cards not available yet")
+
+    # Validate the candidate_id exists
+    card_ids = [c.get("candidate_id") for c in candidate_cards]
+    if candidate_id not in card_ids:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Candidate '{candidate_id}' not found in this run",
+        )
+
+    # Load evidence plans for this run
+    evidence_plans = store.load_all_candidate_objects(run_id, "evidence_plans")
+
+    # Load user_intent for KPI anchor
+    try:
+        user_intent = store.load_run_object(run_id, "user_intent")
+    except FileNotFoundError:
+        user_intent = None
+
+    return build_approval_context(
+        run_id=run_id,
+        candidate_id=candidate_id,
+        candidate_cards=candidate_cards,
+        evidence_plans=evidence_plans,
+        user_intent=user_intent,
+        virtual_capital=virtual_capital,
+    )
 
 
 # ---- Pipeline endpoints ----

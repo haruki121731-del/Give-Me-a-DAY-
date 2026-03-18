@@ -36,6 +36,68 @@ export interface RunStatusResponse {
   error: string | null
 }
 
+export interface CompanionQuestion {
+  id: string
+  text: string
+  type: string
+  options: string[]
+  optional: boolean
+}
+
+export interface CompanionGoalResponse {
+  needs_clarification: boolean
+  questions: CompanionQuestion[]
+  contradictions: string[]
+  inferences: Array<{ field: string; from_text: string; inferred_value: string }>
+}
+
+export interface PreflightSubmitResponse {
+  refined_request: {
+    goal: string
+    success_criteria?: string
+    risk?: string
+    time_horizon?: string
+    exclusions: string[]
+  }
+  inference_summary: Array<{ field: string; inferred_value: string; from_text: string }>
+  open_uncertainties: string[]
+  kpi_anchor?: string
+}
+
+export interface StopConditionTranslation {
+  id: string
+  plain_language: string
+  virtual_capital_amount?: number
+}
+
+export interface RiskAnnotation {
+  original_risk_text: string
+  annotation: string
+}
+
+export interface ComprehensionCheck {
+  question: string
+  options: string[]
+  correct_index: number
+}
+
+export interface ApprovalContext {
+  run_id: string
+  candidate_id: string
+  authority_disclosure: string
+  kpi_alignment: {
+    aligned: boolean
+    anchor: string
+    candidate_band: string
+    note: string
+  }
+  stop_condition_translations: StopConditionTranslation[]
+  risk_annotations: RiskAnnotation[]
+  data_access_disclosure: string
+  paper_run_explanation: string
+  comprehension_check: ComprehensionCheck
+}
+
 export const api = {
   createRun: (data: {
     goal: string
@@ -76,4 +138,37 @@ export const api = {
 
   getMonthlyReports: (prId: string) =>
     request<Record<string, unknown>[]>(`/paper-runs/${prId}/reports`),
+
+  preflightGoal: (data: {
+    goal: string
+    success_criteria?: string
+    risk?: string
+    time_horizon?: string
+    exclusions?: string[]
+  }) =>
+    request<CompanionGoalResponse>('/runs/preflight', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  preflightSubmit: (data: {
+    original_request: {
+      goal: string
+      success_criteria?: string
+      risk?: string
+      time_horizon?: string
+      exclusions?: string[]
+    }
+    answers: Record<string, string>
+  }) =>
+    request<PreflightSubmitResponse>('/runs/preflight/submit', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  getApprovalContext: (runId: string, candidateId: string, virtualCapital?: number) => {
+    const params = new URLSearchParams({ candidate_id: candidateId })
+    if (virtualCapital !== undefined) params.set('virtual_capital', String(virtualCapital))
+    return request<ApprovalContext>(`/runs/${runId}/approval-context?${params}`)
+  },
 }

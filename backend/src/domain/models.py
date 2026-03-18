@@ -306,6 +306,8 @@ class UserIntent(BaseModel):
     must_not_do: list[str] = Field(default_factory=list)
     available_inputs: list[str] = Field(default_factory=list)
     open_uncertainties: list[str] = Field(default_factory=list)
+    # Companion AI tracing — optional, never read by pipeline logic
+    companion_context: Optional[dict] = None
 
 
 # ============================================================
@@ -743,6 +745,8 @@ class Approval(BaseModel):
     ])
     re_evaluation: ReEvaluationConfig = Field(default_factory=ReEvaluationConfig)
     re_approval_required: list[str] = Field(default_factory=list)
+    # Companion AI tracing — optional, never read by pipeline logic
+    companion_context: Optional[dict] = None
 
 
 # ============================================================

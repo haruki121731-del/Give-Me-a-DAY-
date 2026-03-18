@@ -96,13 +96,53 @@ Frontend pages exist as minimal stubs. API endpoints exist as routing stubs.
 
 ---
 
+## Companion AI v1 — COMPLETED
+
+**Last updated**: 2026-03-18
+
+| Task | Status | Files |
+|------|--------|-------|
+| C.1 Companion module | ✅ Done | `companion/__init__.py`, `companion/models.py` — all 7 schema objects |
+| C.2 Trigger evaluator | ✅ Done | `companion/trigger_evaluator.py` — T1–T7, needs_clarification gate |
+| C.3 Contradiction detector | ✅ Done | `companion/contradiction_detector.py` — CON-01 to CON-06 |
+| C.4 Constraint inferrer | ✅ Done | `companion/constraint_inferrer.py` — pattern-based risk/time/success inference |
+| C.5 Question builder | ✅ Done | `companion/question_builder.py` — Q-SUCCESS, Q-RISK, Q-TIME, Q-SCOPE, Q-REFINE |
+| C.6 Approval context builder | ✅ Done | `companion/approval_context_builder.py` — full disclosure generation |
+| C.7 Domain model extension | ✅ Done | `domain/models.py` — `companion_context: Optional[dict]` on UserIntent + Approval (trace-only) |
+| C.8 API schemas | ✅ Done | `api/schemas.py` — PreflightRequest/Response, PreflightSubmitRequest/Response |
+| C.9 API endpoints | ✅ Done | `api/routes.py` — `POST /runs/preflight`, `POST /runs/preflight/submit`, `GET /runs/{id}/approval-context` |
+| C.10 Frontend API client | ✅ Done | `frontend/src/api/client.ts` — preflightGoal, preflightSubmit, getApprovalContext |
+| C.11 InputPage preflight flow | ✅ Done | `frontend/src/pages/InputPage.tsx` — 3-stage flow (input → clarification → review) |
+| C.12 ApprovalPage disclosure | ✅ Done | `frontend/src/pages/ApprovalPage.tsx` — authority disclosure, KPI alignment, stop translations, comprehension check |
+| C.13 Tests | ✅ Done | 115 new companion tests (4 files), 199 total passing |
+
+**What Companion AI v1 does:**
+- Evaluates goal completeness on `/preflight` before pipeline starts
+- Asks ≤4 clarifying questions if triggers T1–T7 fire; stays silent if goal is complete
+- Surfaces CON-01 to CON-06 contradictions as notices (non-blocking) before questions
+- Infers `risk_preference`, `time_horizon_preference`, `success_definition` from free-text answers (pattern-based only)
+- Shows user an inference review step before pipeline submission
+- At Approval Gate: generates authority disclosure, KPI alignment check, plain-language stop condition translations, risk annotations, data access disclosure, Paper Run explanation
+- Requires one comprehension check (SC-01 scenario) before checkboxes are enabled
+- `companion_context` field is trace-only — pipeline logic never reads it
+
+**What Companion AI v1 does NOT do (intentionally out of scope):**
+- No LLM inference
+- No session memory
+- No generic chat behavior
+- No changes to recommendation, execution, or stop-condition logic
+- No involvement in pipeline steps 2–9
+- No expert-user shortcuts or skip logic
+
+---
+
 ## Round 6: Paper Run Runtime — NOT STARTED
 
 All Paper Run modules are placeholder directories only.
 
 ---
 
-## What Works Now (Round 3)
+## What Works Now (Companion AI v1 + Round 3)
 
 1. Backend starts: `uvicorn src.main:app`
 2. `POST /api/v1/runs` runs full 12-step pipeline (planning + execution)
@@ -114,7 +154,7 @@ All Paper Run modules are placeholder directories only.
 8. PaperRunEngine: daily mark-to-market update, 4 stop conditions (drawdown, underperf, anomaly, data quality)
 9. Execution gracefully falls back to planning-only mode if data unavailable
 10. All prior features (approval gate, presentation, export) continue working
-11. All 144 tests pass
+11. All 144 prior tests pass; 115 new Companion AI tests added (199 total passing)
 
 ## What Does NOT Work Yet
 
