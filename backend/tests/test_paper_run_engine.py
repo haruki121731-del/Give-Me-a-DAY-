@@ -2,6 +2,11 @@
 
 from datetime import datetime
 
+import pytest
+
+pytest.importorskip("numpy")
+pytest.importorskip("pandas")
+
 from src.domain.models import (
     Approval,
     CurrentSnapshot,

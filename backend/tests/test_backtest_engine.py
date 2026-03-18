@@ -1,7 +1,9 @@
 """Tests for BacktestEngine module (Round 3)."""
 
-import numpy as np
-import pandas as pd
+import pytest
+
+np = pytest.importorskip("numpy")
+pd = pytest.importorskip("pandas")
 
 from src.domain.models import (
     Candidate,

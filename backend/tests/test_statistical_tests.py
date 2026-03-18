@@ -1,6 +1,8 @@
 """Tests for StatisticalTests module (Round 3)."""
 
-import numpy as np
+import pytest
+
+np = pytest.importorskip("numpy")
 
 from src.domain.models import ExecutionStatus, TestResultOutcome
 from src.execution.statistical_tests import (

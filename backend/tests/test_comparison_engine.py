@@ -1,5 +1,9 @@
 """Tests for ComparisonEngine module (Round 3)."""
 
+import pytest
+
+pytest.importorskip("numpy")
+
 from src.domain.models import (
     ExecutionStatus,
     MetricResult,
