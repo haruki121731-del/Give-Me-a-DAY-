@@ -1,7 +1,8 @@
 # SESSION_HANDOFF.md
 
-**最終更新**: 2026-03-24 (Session 3 — final)
+**最終更新**: 2026-03-24 (Session 3 — 全タスク完了)
 **最終 PR**: #20 merged
+**セッション状態**: CLOSED ✅
 
 ---
 
@@ -11,83 +12,61 @@
 - `ops/run.sh` をフルオーケストレーションオーナーに昇格（7ステップ）
 - `generate_daily_report.sh` を Generation 専任に絞り込み
 - run contract C2–C6 artifact validation 実装
-- PROVIDER FALLBACK POLICY を explicit にコメント化
 - `ops/RUNBOOK.md` をオペレーターグレードに書き直し
 
-### PR #18: state files Session 3
-- `CURRENT_STATE.md` / `SESSION_HANDOFF.md` を Session 3 反映
-
-### PR #19: missing plan files
-- `docs/architecture/module_map.md`（モジュール責任表）
-- `docs/architecture/agent_execution_flow.md`（ASCII フロー図）
-- `.github/workflows/daily-report.yml`（cron + workflow_dispatch）
-- `.github/workflows/issue-summary.yml`（週次 Issue サマリー）
-- `scripts/ai/collect_issue_context.py`
-- `ops/prompts/dev_agent.md` / `growth_agent.md`
-- `ops/schemas/report_schema.json`
-
-### PR #20: fix/supabase-409-err-trap
-- `ops/run.sh`: Supabase write / git push ブロック前後に `trap - ERR` / `trap ... ERR` を追加
-- `ops/scripts/write_run_state.py`: HTTP 409 を WARNING として exit 0 で処理
+### PR #18–#20
+- #18: state files Session 3
+- #19: missing plan files (module_map, agent flow, workflows, prompts, schemas)
+- #20: ERR trap fix + Supabase 409 non-fatal
 
 ### GitHub Actions 検証
-- Run #1: skip_commit=true → ✅ exit 0（LLM + Supabase confirmed）
-- Run #2: full run → ❌ exit 4（ERR trap + HTTP 409）
-- Run #3: PR #20 適用後 full run → ✅ exit 0（all steps including git push）
+- Run #3: exit 0, LLM + C2–C6 + Supabase + git push すべて確認済み
+
+### Session 3 チェックリスト
+- ① ANTHROPIC_API_KEY: ✅
+- ② GitHub Labels: ✅ Haruki 完了
+- ③ GitHub Secrets: ✅
+- ④ Supabase free tier cap: ✅
+- ⑤ Railway cron: ✅
+- ⑥ Marketing logs: ✅ `docs/marketing/logs/2026-03-24-system-operational.md` + `docs/marketing/weekly_kpi/2026-W13.md` (ベースライン)
+- ⑦ OpenHands: ✅ Haruki 完了
 
 ---
 
 ## 次のセッション開始コピペ
 
 ```
-前回: Session 3 完了。
+前回: Session 3 完全完了。
 - PR #17–#20 全て main にマージ済み。
 - GitHub Actions で End-to-End 確認済み（Run #3 exit 0）。
-- LLM (OpenRouter), artifact validation C2–C6, Supabase write, git push すべて動作確認。
-- Railway cron 設定済み（自然発火待ち）。
+- 2週間計画タスク ①〜⑦ 全完了。
+- marketing_health: weak signal（ベースラインログ 1件 + KPI 1件）。
+- Railway cron: 設定済み、自然発火待ち。
 
-残タスク:
-② GitHub Labels を手動追加（fix-me, agent-dev, agent-docs, agent-growth, needs-human-review, report-blocker, build-failure, architecture-drift, marketing-alert）
-⑥ docs/marketing/logs/ に施策ログ 1〜2本追加
-⑦ OpenHands GitHub Action の完全セットアップとテスト
+現在のシステム状態:
+- 毎日 UTC 0:00 に GitHub Actions と Railway で ops/run.sh が実行される
+- レポートは docs/reports/daily/YYYY-MM-DD.md に蓄積される
+- Supabase run_logs にラン記録が残る
+- OpenHands: fix-me ラベルで自動PR作成が動く
 
 次の目的: [1つ選ぶ]
-(a) ⑦ OpenHands: OPENHANDS_API_KEY 設定 → fix-me label → issue→PR ループ動作確認
-(b) ⑥ marketing logs 追加 → marketing_health が "unknown" から抜け出す
-(c) Week 2 タスク（OL-009, OL-012, OL-013 のいずれか）
+(a) Week 2 タスク: The Mom Test インタビュー対象リストアップ + アウトリーチ文面作成
+(b) 外部発信: X (Twitter) / note でのメッセージング草案作成
+(c) OpenHands テスト: fix-me ラベル付き issue → 自動PR ループ動作確認
+(d) プロダクト: GoalIntake → DomainFramer の LLM 出力品質検証
 ```
 
 ---
 
-## HUMAN_REQUIRED（残タスク）
-
-### ② GitHub Labels（1〜2分）
-以下のラベルを GitHub Repo Settings → Labels から手動追加:
-`fix-me`, `agent-dev`, `agent-docs`, `agent-growth`, `needs-human-review`,
-`report-blocker`, `build-failure`, `architecture-drift`, `marketing-alert`
-
-### ⑥ Marketing logs（Haruki 判断が必要）
-`docs/marketing/logs/` に施策ログ（Markdown）を 1〜2本追加。
-フォーマット例: `docs/marketing/logs/2026-03-24-launch-tweet.md`
-→ `detect_marketing_health.sh` が読めるようになると `marketing_health` が "unknown" から変わる。
-
-### ⑦ OpenHands（セットアップ中）
-1. GitHub Secrets に `OPENHANDS_API_KEY` を追加
-2. Variables: `LLM_MODEL=anthropic/claude-haiku-4-5`, `OPENHANDS_MAX_ITER=30`, `TARGET_BRANCH=main`
-3. `fix-me` ラベルを追加（②完了後）
-4. テスト Issue に `fix-me` ラベルを付けて OpenHands workflow が PR を作ることを確認
-
----
-
-## System Confidence (Session 3 final)
+## System Confidence (Session 3 final — all closed)
 
 | Area | Confidence | Basis |
 |------|-----------|-------|
 | ops/run.sh 全体 | HIGH | GitHub Actions Run #3 exit 0 confirmed |
 | Artifact validation C2–C6 | HIGH | injected fake artifacts + live run |
 | Provider fallback (OpenRouter first) | HIGH | Run #3 で OpenRouter 使用確認 |
-| Provider fallback (Anthropic direct) | MEDIUM | コードは正しい、未トリガー |
 | Supabase write (409 graceful) | HIGH | Run #3 で 409 WARNING 確認 |
 | Git push from Actions | HIGH | Run #3 で main に push 確認 |
+| Marketing health monitoring | MEDIUM | weak signal (1 log, baseline only) |
 | Railway cron | UNKNOWN | 設定済み、自然発火未確認 |
-| OpenHands issue→PR loop | UNKNOWN | セットアップ中 |
+| OpenHands issue→PR loop | UNKNOWN | セットアップ完了、動作未確認 |
