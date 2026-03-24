@@ -1,106 +1,93 @@
 # SESSION_HANDOFF.md
 
-**最終更新**: 2026-03-24 (Session 3)
-**PR**: #17 merged
+**最終更新**: 2026-03-24 (Session 3 — final)
+**最終 PR**: #20 merged
 
 ---
 
-## Done（Session 3）
+## Done（Session 3 全体）
 
 ### PR #17: refactor/ops-contract-v2
+- `ops/run.sh` をフルオーケストレーションオーナーに昇格（7ステップ）
+- `generate_daily_report.sh` を Generation 専任に絞り込み
+- run contract C2–C6 artifact validation 実装
+- PROVIDER FALLBACK POLICY を explicit にコメント化
+- `ops/RUNBOOK.md` をオペレーターグレードに書き直し
 
-**generate_daily_report.sh** — 役割をGenerationのみに絞る
-- collect() / sub-script呼び出しを削除（ops/run.shに移管）
-- Supabasewrite・git pushを削除（ops/run.shに移管）
-- PROVIDER FALLBACK POLICY コメントブロック追加（explicit）
-- /tmp/gmd_meta/ サイドカーファイルでステータストークンを渡す仕組み追加
+### PR #18: state files Session 3
+- `CURRENT_STATE.md` / `SESSION_HANDOFF.md` を Session 3 反映
 
-**ops/run.sh** — フルオーケストレーションオーナーに昇格
-- Step 2: DATA COLLECTION（sub-scripts呼び出し）
-- Step 4: ARTIFACT VALIDATION（run contract C2–C6）
-- Step 5: SUPABASE WRITE（generate scriptから移管）
-- Step 6: GIT COMMIT + PUSH（generate scriptから移管、GITHUB_TOKEN injectionで認証）
-- exit code修正: 0/1/2/3/4 明確化
-- dry-run時はSupabase/git両方スキップ
+### PR #19: missing plan files
+- `docs/architecture/module_map.md`（モジュール責任表）
+- `docs/architecture/agent_execution_flow.md`（ASCII フロー図）
+- `.github/workflows/daily-report.yml`（cron + workflow_dispatch）
+- `.github/workflows/issue-summary.yml`（週次 Issue サマリー）
+- `scripts/ai/collect_issue_context.py`
+- `ops/prompts/dev_agent.md` / `growth_agent.md`
+- `ops/schemas/report_schema.json`
 
-**ops/RUNBOOK.md** — オペレーターグレード書き直し
-- 4ステップ activation sequence（各ステップの期待出力付き）
-- smoke test コマンド（コピペ可）
-- 障害ケース別の診断と修正方法
+### PR #20: fix/supabase-409-err-trap
+- `ops/run.sh`: Supabase write / git push ブロック前後に `trap - ERR` / `trap ... ERR` を追加
+- `ops/scripts/write_run_state.py`: HTTP 409 を WARNING として exit 0 で処理
 
-**Verified in clean clone:**
-- `--check-only` no key → exit 1 ✅
-- `--dry-run` → exit 0, C2–C6 pass, 2197 bytes ✅
-- JSON payload artifact → exit 3, C4 caught ✅
-- 56-byte artifact → exit 3, C3 caught ✅
+### GitHub Actions 検証
+- Run #1: skip_commit=true → ✅ exit 0（LLM + Supabase confirmed）
+- Run #2: full run → ❌ exit 4（ERR trap + HTTP 409）
+- Run #3: PR #20 適用後 full run → ✅ exit 0（all steps including git push）
 
 ---
 
 ## 次のセッション開始コピペ
 
 ```
-前回: PR #17 merge済み。
-- ops/run.sh がフルオーケストレーションオーナーに。generate_daily_report.sh はGeneration専任。
-- run contract C2–C6（artifact validation）実装・検証済み。
-- RUNBOOK.md オペレーターグレードに書き直し。
+前回: Session 3 完了。
+- PR #17–#20 全て main にマージ済み。
+- GitHub Actions で End-to-End 確認済み（Run #3 exit 0）。
+- LLM (OpenRouter), artifact validation C2–C6, Supabase write, git push すべて動作確認。
+- Railway cron 設定済み（自然発火待ち）。
+
+残タスク:
+② GitHub Labels を手動追加（fix-me, agent-dev, agent-docs, agent-growth, needs-human-review, report-blocker, build-failure, architecture-drift, marketing-alert）
+⑥ docs/marketing/logs/ に施策ログ 1〜2本追加
+⑦ OpenHands GitHub Action の完全セットアップとテスト
 
 次の目的: [1つ選ぶ]
-(a) ANTHROPIC_API_KEY を用意してエンドツーエンドライブテスト: bash ops/run.sh --skip-commit
-(b) Supabase セットアップ（free tier cap を解消してから）
-(c) Railway cron 設定
-(d) Week 2 タスク（OL-009, OL-012, OL-013 のいずれか）
+(a) ⑦ OpenHands: OPENHANDS_API_KEY 設定 → fix-me label → issue→PR ループ動作確認
+(b) ⑥ marketing logs 追加 → marketing_health が "unknown" から抜け出す
+(c) Week 2 タスク（OL-009, OL-012, OL-013 のいずれか）
 ```
 
 ---
 
-## HUMAN_REQUIRED（優先順）
+## HUMAN_REQUIRED（残タスク）
 
-### 今すぐできる（1分）
-**エンドツーエンドライブテスト**:
-```bash
-cd Give-Me-a-DAY-
-source .env.ops   # ANTHROPIC_API_KEY を設定済みであること
-bash ops/run.sh --skip-commit
-# Expected: exit 0, "✅ Run contract satisfied"
-cat docs/reports/daily/$(date +%Y-%m-%d).md | head -30
-```
+### ② GitHub Labels（1〜2分）
+以下のラベルを GitHub Repo Settings → Labels から手動追加:
+`fix-me`, `agent-dev`, `agent-docs`, `agent-growth`, `needs-human-review`,
+`report-blocker`, `build-failure`, `architecture-drift`, `marketing-alert`
 
-### 外部セットアップが必要
-1. **Supabase**: supabase.com で inactive project を1件削除 → restore → SQL Editor で `ops/schemas/run_state_schema.sql` 実行
-2. **Railway**: New Project → `bash ops/run.sh` をcron `0 0 * * *` で設定 → Variables に env 追加
+### ⑥ Marketing logs（Haruki 判断が必要）
+`docs/marketing/logs/` に施策ログ（Markdown）を 1〜2本追加。
+フォーマット例: `docs/marketing/logs/2026-03-24-launch-tweet.md`
+→ `detect_marketing_health.sh` が読めるようになると `marketing_health` が "unknown" から変わる。
 
----
-
-## Smoke test（設定後にこれだけ実行すれば OK）
-
-```bash
-# Step 1: preflight
-bash ops/run.sh --check-only
-# expect: exit 0
-
-# Step 2: dry-run artifact validation
-bash ops/run.sh --dry-run
-# expect: exit 0, "✅ Run contract satisfied"
-
-# Step 3: live LLM (key required)
-bash ops/run.sh --skip-commit
-# expect: exit 0, report written
-
-# Step 4: full run
-bash ops/run.sh
-# expect: exit 0, Supabase write OK, pushed to main
-```
+### ⑦ OpenHands（セットアップ中）
+1. GitHub Secrets に `OPENHANDS_API_KEY` を追加
+2. Variables: `LLM_MODEL=anthropic/claude-haiku-4-5`, `OPENHANDS_MAX_ITER=30`, `TARGET_BRANCH=main`
+3. `fix-me` ラベルを追加（②完了後）
+4. テスト Issue に `fix-me` ラベルを付けて OpenHands workflow が PR を作ることを確認
 
 ---
 
-## System Confidence (Session 3 updated)
+## System Confidence (Session 3 final)
 
 | Area | Confidence | Basis |
 |------|-----------|-------|
-| ops/run.sh orchestration logic | HIGH | verified in clean clone, exit codes confirmed |
-| Artifact validation C2–C6 | HIGH | injected fake artifacts, all checks triggered correctly |
-| generate_daily_report.sh structure | HIGH | syntax OK, dry-run path verified |
-| Provider fallback policy | HIGH | code is explicit; untested with real API keys |
-| LLM live call | LOW | no valid key available in test env |
-| Supabase write | LOW | blocked by free tier cap |
-| Railway cron end-to-end | UNKNOWN | not yet configured |
+| ops/run.sh 全体 | HIGH | GitHub Actions Run #3 exit 0 confirmed |
+| Artifact validation C2–C6 | HIGH | injected fake artifacts + live run |
+| Provider fallback (OpenRouter first) | HIGH | Run #3 で OpenRouter 使用確認 |
+| Provider fallback (Anthropic direct) | MEDIUM | コードは正しい、未トリガー |
+| Supabase write (409 graceful) | HIGH | Run #3 で 409 WARNING 確認 |
+| Git push from Actions | HIGH | Run #3 で main に push 確認 |
+| Railway cron | UNKNOWN | 設定済み、自然発火未確認 |
+| OpenHands issue→PR loop | UNKNOWN | セットアップ中 |
