@@ -37,3 +37,4 @@
 | OL-012 | Railway cron 未設定 | 2026-03-24 | Railway に `bash ops/run.sh` cron 設定完了 |
 | OL-013 | Supabase free tier cap | 2026-03-24 | Haruki が inactive project 削除 → project `igjggjagwixsfkouyyaw` active |
 | OL-014 | main に未 push コミット・未ステージ変更 | 2026-03-24 | PR #15, #16 で全解消 |
+| OL-015 | Test | OpenHands 動作確認テスト | Low | Agent | 2026-03-24 |
