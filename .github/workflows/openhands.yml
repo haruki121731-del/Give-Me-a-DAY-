@@ -20,7 +20,7 @@ jobs:
        contains(github.event.comment.body, '@openhands-agent'))
     runs-on: ubuntu-latest
     steps:
-      - uses: all-hands-ai/openhands-resolver@v0.47
+      - uses: all-hands-ai/openhands-resolver@v0.3.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENHANDS_API_KEY: ${{ secrets.OPENHANDS_API_KEY }}
