@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DailyReportSchema",
+  "description": "Give Me a DAY daily report の構造定義。generate_daily_report.sh の出力バリデーションに使用。",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "description": "YYYY-MM-DD"
+    },
+    "generated_at": {
+      "type": "string",
+      "description": "ISO8601 timestamp"
+    },
+    "llm_provider": {
+      "type": "string",
+      "enum": ["openrouter", "anthropic", "data_only", "dry_run"],
+      "description": "どのプロバイダーで生成されたか"
+    },
+    "sections": {
+      "type": "object",
+      "description": "7見出し構造",
+      "properties": {
+        "summary":          { "type": "string" },
+        "weekly_changes":   { "type": "string" },
+        "progress":         { "type": "string" },
+        "build_failure":    { "type": "string" },
+        "architecture_drift": { "type": "string" },
+        "marketing_response": { "type": "string" },
+        "next_focus":       { "type": "string" }
+      },
+      "required": ["summary", "build_failure", "architecture_drift", "marketing_response"]
+    },
+    "contract": {
+      "type": "object",
+      "description": "ops/run.sh artifact validation の結果",
+      "properties": {
+        "c2_file_exists":    { "type": "boolean" },
+        "c3_min_size":       { "type": "boolean" },
+        "c4_not_json":       { "type": "boolean" },
+        "c5_no_error_prefix": { "type": "boolean" },
+        "c6_min_sections":   { "type": "boolean" }
+      }
+    }
+  },
+  "required": ["date", "llm_provider"],
+  "additionalProperties": true
+}
