@@ -265,6 +265,8 @@ else
   DRIFT_TOKEN=$(cat /tmp/gmd_meta/drift_status     2>/dev/null || echo "unknown")
   MKTG_TOKEN=$(cat /tmp/gmd_meta/marketing_status  2>/dev/null || echo "unknown")
 
+  # Disable ERR trap — Supabase failure is non-fatal (409 duplicate, network, etc.)
+  trap - ERR
   set +e
   python3 "${REPO_ROOT}/ops/scripts/write_run_state.py" \
     --run-id "${DATE}_daily_report" \
@@ -276,6 +278,8 @@ else
     --marketing-health "${MKTG_TOKEN}"
   SUPA_EXIT=$?
   set -e
+  # Restore ERR trap
+  trap 'echo ""; echo "❌ ops/run.sh: unexpected error at line ${LINENO}"; exit 4' ERR
 
   if [ ${SUPA_EXIT} -eq 0 ]; then
     echo "  ✅ Supabase write OK"
@@ -320,11 +324,13 @@ else
                  || echo "https://github.com/haruki121731-del/Give-Me-a-DAY-.git")
     REMOTE_WITH_TOKEN=$(echo "${REMOTE_URL}" | sed "s|https://|https://${GITHUB_TOKEN}@|")
 
+    trap - ERR
     set +e
     git commit -m "report: daily ${DATE} [agent]" 2>/dev/null
     git push "${REMOTE_WITH_TOKEN}" HEAD:main      2>/dev/null
     PUSH_EXIT=$?
     set -e
+    trap 'echo ""; echo "❌ ops/run.sh: unexpected error at line ${LINENO}"; exit 4' ERR
 
     if [ ${PUSH_EXIT} -eq 0 ]; then
       echo "  ✅ pushed to main"
