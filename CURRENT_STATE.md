@@ -1,144 +1,69 @@
 # CURRENT_STATE.md
 
-**最終更新**: 2026-03-24 (Session 4 — OpenHands E2E 動作確認完了)
-**最終 PR**: #22 (fix/issue-21-auto — OPEN_LOOPS.md OL-015 追加)
+**Role**: Parent index. Short overview by domain. Pointer map to detail files.
+**Truth precedence rank**: (inherits from `docs/state/*.md` — rank 3)
+**Last updated**: 2026-03-24 (Session 4)
+
+For rules and mission: → `SYSTEM_PRINCIPLES.md`
+For decisions: → `DECISIONS.md`
 
 ---
 
-## Architecture: Responsibility Boundaries (post PR #17)
+## System Status Overview
 
-```
-ops/run.sh  ←── single orchestration owner
-├── [1] PREFLIGHT       env vars + required files
-├── [2] COLLECT         run sub-scripts → /tmp/gmd_*.md
-├── [3] GENERATE        call generate_daily_report.sh (LLM → file only)
-├── [4] VALIDATE        enforce contract C2–C6 on artifact
-├── [5] PERSIST         write_run_state.py → Supabase (non-fatal 409 handled)
-├── [6] COMMIT          git add + commit + push (optional)
-└── [7] SUMMARY         print outcome
-
-generate_daily_report.sh  ←── generation only
-├── reads /tmp/gmd_*.md (written by ops/run.sh)
-├── reads OPEN_LOOPS.md
-├── calls LLM (OpenRouter → Anthropic fallback → data template)
-├── writes docs/reports/daily/YYYY-MM-DD.md
-└── writes /tmp/gmd_meta/{build,drift,marketing}_status
-
-write_run_state.py  ←── persistence only
-└── inserts into Supabase run_logs (HTTP 409 duplicate = WARNING exit 0)
-```
+| Domain | State | Detail |
+|--------|-------|--------|
+| Product | v1 spec complete, backend implemented, no live users | → `docs/state/product.md` |
+| Engineering | Rounds 1–6.12 complete, CI active, no production deployment | → `docs/state/engineering.md` |
+| Ops | Daily cron confirmed (Run #3), OpenHands E2E confirmed (PR #22) | → `docs/state/ops.md` |
+| Marketing | Internal only, all external channels zero | → `docs/state/marketing.md` |
+| Agent Governance | 3 agents defined, guardrails active | → `docs/state/agent_governance.md` |
+| Risk | R-001 (no live users), R-003 (legal), R-010 (zero marketing) are top risks | → `docs/state/risk.md` |
 
 ---
 
-## Run Contract (ops/run.sh)
+## Top Blockers / Critical Changes
 
-A run is **SUCCESS (exit 0)** iff:
-- [C1] Preflight passed
-- [C2] Report file exists at `docs/reports/daily/YYYY-MM-DD.md`
-- [C3] Report size ≥ 200 bytes
-- [C4] Report does not start with `{` (JSON error payload rejected)
-- [C5] Report first line does not start with `ERROR:`
-- [C6] Report contains ≥ 2 `## ` section headers
-
-Optional steps (Supabase write, git push) do not affect the contract.
-
-Exit codes: 0=success, 1=preflight, 2=generate failed, 3=validation failed, 4=unexpected error
-
-**ERR trap**: `trap - ERR` added before Supabase write and git push blocks (PR #20). Non-fatal sections cannot trigger exit 4.
+| # | Item | Owner | State file |
+|---|------|-------|------------|
+| 1 | No live users — PMF entirely unvalidated | human | `docs/state/product.md` |
+| 2 | Railway cron: configured, natural trigger unconfirmed | agent detect | `docs/state/ops.md` |
+| 3 | Marketing: zero external activity | human | `docs/state/marketing.md` |
+| 4 | Legal review: investment product, no review done | human | `docs/state/risk.md` |
 
 ---
 
-## Provider Fallback Policy (generate_daily_report.sh)
+## Open Loops Summary
 
-| Order | Provider | Trigger for fallback |
-|-------|----------|---------------------|
-| 1 | OpenRouter | Response missing `choices` key (402, 429, 5xx, curl error) |
-| 2 | Anthropic direct | Response missing `type: message` (401, 429, 5xx, curl error) |
-| 3 | Data-only template | Both fail — always produces valid markdown, never writes JSON/ERROR: |
+All loops: → `OPEN_LOOPS.md`
 
----
+Currently open:
 
-## End-to-End Verification (GitHub Actions)
-
-| Run | Method | Result |
-|-----|--------|--------|
-| Run #1 (workflow_dispatch, skip_commit=true) | GitHub Actions | ✅ exit 0, LLM OK, Supabase write confirmed |
-| Run #2 (workflow_dispatch, full run) | GitHub Actions | ❌ exit 4 — ERR trap fired on Supabase HTTP 409 |
-| Run #3 (workflow_dispatch, full run, after PR #20) | GitHub Actions | ✅ exit 0 — all steps including git push |
-
-**Run #3 confirmed output:**
-- FRED_API_KEY, SUPABASE_URL/KEY, GITHUB_TOKEN: ✅ all present in Actions secrets
-- LLM: OpenRouter OK (1781 bytes, 7 section headers)
-- Artifact validation C2–C6: ✅ all passed
-- Supabase: HTTP 409 WARNING (non-fatal, already recorded same day) ✅
-- Git push to main: ✅
+| ID | Title | Priority | Owner |
+|----|-------|----------|-------|
+| OL-016 | Mom Test / customer validation | P1 | human |
+| OL-017 | LLM output quality verification (real runs) | P2 | agent |
+| OL-018 | CI green confirmation on latest HEAD | P2 | agent |
+| OL-019 | Railway cron natural trigger confirmation | P2 | agent |
+| OL-020 | State architecture implementation (this PR) | P0 | agent |
 
 ---
 
-## OpenHands Issue Resolver (`.github/workflows/openhands.yml`)
+## Recent Changes (Session 4)
 
-**Session 4 で E2E 動作確認済み**
-
-| 項目 | 状態 |
-|------|------|
-| トリガー | `issues: labeled (fix-me)` ✅ |
-| Claude API 呼び出し | `claude-3-haiku-20240307` ✅ |
-| ブランチ作成・push | `fix/issue-{N}-auto` ✅ |
-| PR 自動作成 | ✅ |
-| Issue コメント投稿 | ✅ |
-| fix-me ラベル自動除去 | ✅ |
-| 実行時間 | ~10秒（exit 143 問題: 完全解消） |
-
-**確認済みフロー（Session 4）:**
-- Issue #21 に `fix-me` ラベル → PR #22 自動作成 → main にマージ済み
-
-**使用モデル**: `claude-3-haiku-20240307`（$0.25/MTok — コスト最小）
-**実装方式**: stdlib のみ（`urllib.request`）— pip install ゼロ
+- PR #22 merged: OPEN_LOOPS.md OL-015 added (OpenHands E2E test)
+- `openhands.yml` production-cleaned (diagnostic step removed)
+- OpenHands issue→PR loop E2E confirmed working
+- ANTHROPIC_API_KEY confirmed working with `claude-3-haiku-20240307`
 
 ---
 
-## Verified (all sessions)
+## Read Order for AI Context Reconstruction
 
-| Component | Status |
-|---|---|
-| CI `.github/workflows/pr-build.yml` (PR #7) | ✅ |
-| `detect_architecture_drift.sh` (PR #11) | ✅ |
-| `detect_marketing_health.sh` (PR #12) | ✅ |
-| ops/run.sh C2–C6 artifact validation | ✅ (injected fake reports) |
-| ops/run.sh ERR trap isolation | ✅ (PR #20) |
-| write_run_state.py HTTP 409 handling | ✅ (PR #20) |
-| Full GitHub Actions pipeline end-to-end | ✅ (Run #3) |
-| Railway cron | 🟡 configured, awaiting natural trigger |
-| **OpenHands issue→PR loop** | **✅ (Session 4 — PR #22)** |
-
----
-
-## Merged PRs (all)
-
-| PR | Description | Status |
-|----|-------------|--------|
-| #6 | initial docs structure | ✅ |
-| #7 | CI workflow | ✅ |
-| #8–#10 | docs: architecture, agents, templates | ✅ |
-| #11 | detect_architecture_drift.sh | ✅ |
-| #12 | detect_marketing_health.sh | ✅ |
-| #13 | generate_daily_report.sh (initial) | ✅ |
-| #14 | write_run_state.py + run_state_schema.sql | ✅ |
-| #15 | ops bug fixes (8 bugs) | ✅ |
-| #16 | CURRENT_STATE.md + SESSION_HANDOFF.md | ✅ |
-| #17 | ops contract refactor + artifact validation C2–C6 | ✅ |
-| #18 | state files Session 3 | ✅ |
-| #19 | missing plan files (module_map, agent flow, workflows, prompts) | ✅ |
-| #20 | ERR trap fix + Supabase 409 non-fatal | ✅ |
-| #21 | marketing log baseline (2026-03-24) | ✅ |
-| #22 | OPEN_LOOPS.md OL-015 追加 (OpenHands E2E test) | ✅ |
-
----
-
-## Daily Cron Status
-
-- GitHub Actions: `0 0 * * *` UTC, confirmed working
-- Railway: configured `bash ops/run.sh`, awaiting first natural trigger
-- Report lands at: `docs/reports/daily/YYYY-MM-DD.md` (pushed to main by workflow)
-- Supabase run_logs: project `igjggjagwixsfkouyyaw` (ap-southeast-2), confirmed recording
-- Marketing health: `weak signal` (1 log + 1 KPI, baseline recorded 2026-03-24)
+1. `SYSTEM_PRINCIPLES.md` — rules and mission
+2. `CURRENT_STATE.md` — this file (overview)
+3. `docs/state/{product,engineering,ops}.md` — domain detail
+4. `OPEN_LOOPS.md` — unresolved items
+5. `DECISIONS.md` — directional decisions
+6. `docs/reports/daily/` latest — daily control
+7. `SESSION_HANDOFF.md` — immediate startup context
