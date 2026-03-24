@@ -26,6 +26,67 @@ jobs:
           token: ${{ secrets.PAT_TOKEN }}
           fetch-depth: 1
 
+      - name: Diagnose Anthropic API key
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python3 - << 'PYEOF'
+          import os, json
+          import urllib.request, urllib.error
+
+          key = os.environ.get("ANTHROPIC_API_KEY", "")
+          if not key:
+              print("ERROR: ANTHROPIC_API_KEY is empty")
+          else:
+              print(f"Key prefix: {key[:12]}... length={len(key)}")
+
+          # Test 1: GET /v1/models (no billing, just auth check)
+          req = urllib.request.Request(
+              "https://api.anthropic.com/v1/models",
+              headers={
+                  "x-api-key": key,
+                  "anthropic-version": "2023-06-01",
+              },
+              method="GET"
+          )
+          try:
+              with urllib.request.urlopen(req, timeout=10) as resp:
+                  data = json.loads(resp.read().decode())
+                  models = [m["id"] for m in data.get("data", [])[:5]]
+                  print(f"GET /v1/models OK — first 5: {models}")
+          except urllib.error.HTTPError as e:
+              body = e.read().decode("utf-8", errors="replace")
+              print(f"GET /v1/models HTTP {e.code}: {body}")
+          except Exception as e:
+              print(f"GET /v1/models ERROR: {e}")
+
+          # Test 2: Minimal POST /v1/messages (cheapest model, 1 token)
+          payload = json.dumps({
+              "model": "claude-3-haiku-20240307",
+              "max_tokens": 5,
+              "messages": [{"role": "user", "content": "Hi"}]
+          }).encode("utf-8")
+          req2 = urllib.request.Request(
+              "https://api.anthropic.com/v1/messages",
+              data=payload,
+              headers={
+                  "x-api-key": key,
+                  "anthropic-version": "2023-06-01",
+                  "content-type": "application/json",
+              },
+              method="POST"
+          )
+          try:
+              with urllib.request.urlopen(req2, timeout=30) as resp:
+                  data = json.loads(resp.read().decode())
+                  print(f"POST /v1/messages OK — response: {data['content'][0]['text'][:50]}")
+          except urllib.error.HTTPError as e:
+              body = e.read().decode("utf-8", errors="replace")
+              print(f"POST /v1/messages HTTP {e.code}: {body}")
+          except Exception as e:
+              print(f"POST /v1/messages ERROR: {e}")
+          PYEOF
+
       - name: Resolve issue number
         id: issue_info
         run: |
@@ -63,7 +124,7 @@ jobs:
               print("No issue info, skipping")
               sys.exit(0)
 
-          print(f"Processing issue #{ISSUE_NUMBER}: {ISSUE_TITLE}")
+          print("Processing issue #" + ISSUE_NUMBER + ": " + ISSUE_TITLE)
 
           result = subprocess.run(
               ["git", "ls-files", "--", "*.md", "*.sh", "*.py", "*.yml"],
@@ -87,7 +148,7 @@ jobs:
                   with open(f, "r", encoding="utf-8", errors="replace") as fh:
                       file_contents[f] = fh.read()[:4000]
               except Exception as e:
-                  print(f"Warning: {f}: {e}")
+                  print("Warning: " + f + ": " + str(e))
 
           context = "\n\n".join(
               "File: " + k + "\n```\n" + v + "\n```" for k, v in file_contents.items()
@@ -124,10 +185,10 @@ jobs:
                   response = json.loads(resp.read().decode("utf-8"))
           except urllib.error.HTTPError as e:
               body = e.read().decode("utf-8", errors="replace")
-              print(f"API HTTP error {e.code}: {body}")
+              print("API HTTP error " + str(e.code) + ": " + body)
               sys.exit(1)
           except Exception as e:
-              print(f"API error: {e}")
+              print("API error: " + str(e))
               sys.exit(1)
 
           text = response["content"][0]["text"].strip()
