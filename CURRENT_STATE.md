@@ -1,7 +1,7 @@
 # CURRENT_STATE.md
 
-**最終更新**: 2026-03-24 (Session 3)
-**Session 3 PR**: #17 (refactor/ops-contract-v2)
+**最終更新**: 2026-03-24 (Session 3 — final)
+**最終 PR**: #20 (fix/supabase-409-err-trap)
 
 ---
 
@@ -13,7 +13,7 @@ ops/run.sh  ←── single orchestration owner
 ├── [2] COLLECT         run sub-scripts → /tmp/gmd_*.md
 ├── [3] GENERATE        call generate_daily_report.sh (LLM → file only)
 ├── [4] VALIDATE        enforce contract C2–C6 on artifact
-├── [5] PERSIST         write_run_state.py → Supabase (optional)
+├── [5] PERSIST         write_run_state.py → Supabase (non-fatal 409 handled)
 ├── [6] COMMIT          git add + commit + push (optional)
 └── [7] SUMMARY         print outcome
 
@@ -25,7 +25,7 @@ generate_daily_report.sh  ←── generation only
 └── writes /tmp/gmd_meta/{build,drift,marketing}_status
 
 write_run_state.py  ←── persistence only
-└── inserts into Supabase run_logs (called by ops/run.sh)
+└── inserts into Supabase run_logs (HTTP 409 duplicate = WARNING exit 0)
 ```
 
 ---
@@ -44,6 +44,8 @@ Optional steps (Supabase write, git push) do not affect the contract.
 
 Exit codes: 0=success, 1=preflight, 2=generate failed, 3=validation failed, 4=unexpected error
 
+**ERR trap**: `trap - ERR` added before Supabase write and git push blocks (PR #20). Non-fatal sections cannot trigger exit 4.
+
 ---
 
 ## Provider Fallback Policy (generate_daily_report.sh)
@@ -56,47 +58,35 @@ Exit codes: 0=success, 1=preflight, 2=generate failed, 3=validation failed, 4=un
 
 ---
 
-## Verified (this session)
+## End-to-End Verification (GitHub Actions)
 
-| Test | Method | Result |
-|---|---|---|
-| `--check-only` no key → exit 1 | live run in /tmp/gmd-inspect | ✅ |
-| `--dry-run` → exit 0, C2–C6 pass | live run, 2197 bytes, 7 headers | ✅ |
-| JSON payload artifact → exit 3 C4 | injected fake report | ✅ |
-| Too-small artifact → exit 3 C3 | injected 56-byte file | ✅ |
-| `bash -n` all scripts | syntax check | ✅ |
+| Run | Method | Result |
+|-----|--------|--------|
+| Run #1 (workflow_dispatch, skip_commit=true) | GitHub Actions | ✅ exit 0, LLM OK, Supabase write confirmed |
+| Run #2 (workflow_dispatch, full run) | GitHub Actions | ❌ exit 4 — ERR trap fired on Supabase HTTP 409 |
+| Run #3 (workflow_dispatch, full run, after PR #20) | GitHub Actions | ✅ exit 0 — all steps including git push |
+
+**Run #3 confirmed output:**
+- FRED_API_KEY, SUPABASE_URL/KEY, GITHUB_TOKEN: ✅ all present in Actions secrets
+- LLM: OpenRouter OK (1781 bytes, 7 section headers)
+- Artifact validation C2–C6: ✅ all passed
+- Supabase: HTTP 409 WARNING (non-fatal, already recorded same day) ✅
+- Git push to main: ✅
 
 ---
 
-## Verified (previous sessions)
+## Verified (all sessions)
 
 | Component | Status |
 |---|---|
-| CI `.github/workflows/pr-build.yml` (PR #7) | ✅ verified in GitHub Actions |
-| `detect_architecture_drift.sh` (PR #11) | ✅ verified in clean clone |
-| `detect_marketing_health.sh` (PR #12) | ✅ verified in clean clone |
-
----
-
-## Present-only (not verified end-to-end)
-
-- LLM live call (needs valid ANTHROPIC_API_KEY or OpenRouter with credits)
-- Full run with git push (needs GITHUB_TOKEN + LLM key in same env)
-- Supabase write (blocked by free tier cap)
-- Railway cron (not yet configured)
-
----
-
-## HUMAN_REQUIRED Blockers (in priority order)
-
-1. **LLM key**: Set `ANTHROPIC_API_KEY` in Railway env  
-   → Then run: `bash ops/run.sh --skip-commit` to verify LLM works
-
-2. **Supabase**: Delete 1 of 3 inactive projects at https://supabase.com/dashboard  
-   → Restore 1 → apply `ops/schemas/run_state_schema.sql` → add `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`
-
-3. **Railway**: Configure `bash ops/run.sh` as cron  
-   → See `ops/RUNBOOK.md §3` for exact steps
+| CI `.github/workflows/pr-build.yml` (PR #7) | ✅ |
+| `detect_architecture_drift.sh` (PR #11) | ✅ |
+| `detect_marketing_health.sh` (PR #12) | ✅ |
+| ops/run.sh C2–C6 artifact validation | ✅ (injected fake reports) |
+| ops/run.sh ERR trap isolation | ✅ (PR #20) |
+| write_run_state.py HTTP 409 handling | ✅ (PR #20) |
+| Full GitHub Actions pipeline end-to-end | ✅ (Run #3) |
+| Railway cron | 🟡 configured, awaiting natural trigger |
 
 ---
 
@@ -114,3 +104,25 @@ Exit codes: 0=success, 1=preflight, 2=generate failed, 3=validation failed, 4=un
 | #15 | ops bug fixes (8 bugs) | ✅ |
 | #16 | CURRENT_STATE.md + SESSION_HANDOFF.md | ✅ |
 | #17 | ops contract refactor + artifact validation C2–C6 | ✅ |
+| #18 | state files Session 3 | ✅ |
+| #19 | missing plan files (module_map, agent flow, workflows, prompts) | ✅ |
+| #20 | ERR trap fix + Supabase 409 non-fatal | ✅ |
+
+---
+
+## Remaining Human Actions (Session 3 close)
+
+| # | Item | Status |
+|---|------|--------|
+| ② | GitHub Labels (fix-me, agent-dev, agent-docs, agent-growth, needs-human-review, report-blocker, build-failure, architecture-drift, marketing-alert) | 🔲 Haruki 手動 |
+| ⑥ | Marketing logs: `docs/marketing/logs/` に施策ログ 1〜2本追加 → marketing_health が "unknown" のまま | 🔲 Haruki が内容を判断 |
+| ⑦ | OpenHands GitHub Action: OPENHANDS_API_KEY secret + LLM_MODEL/OPENHANDS_MAX_ITER/TARGET_BRANCH → fix-me label → issue→PR loop テスト | 🔲 Haruki セットアップ中 |
+
+---
+
+## Daily Cron Status
+
+- GitHub Actions: `0 0 * * *` UTC, confirmed working
+- Railway: configured `bash ops/run.sh`, awaiting first natural trigger
+- Report lands at: `docs/reports/daily/YYYY-MM-DD.md` (pushed to main by workflow)
+- Supabase run_logs: project `igjggjagwixsfkouyyaw` (ap-southeast-2), confirmed recording
