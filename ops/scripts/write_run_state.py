@@ -98,8 +98,12 @@ def main() -> None:
                 sys.exit(1)
     except HTTPError as e:
         body_text = e.read().decode("utf-8", errors="replace")[:400]
-        print(f"ERROR: HTTP {e.code} from Supabase: {body_text}")
-        sys.exit(1)
+        if e.code == 409:
+            # 409 Conflict = duplicate run_id (same day run already recorded) — non-fatal
+            print(f"WARNING: run_id={args.run_id!r} already exists in Supabase (HTTP 409) — skipping insert")
+        else:
+            print(f"ERROR: HTTP {e.code} from Supabase: {body_text}")
+            sys.exit(1)
     except URLError as e:
         print(f"ERROR: Cannot reach Supabase at {supabase_url}: {e.reason}")
         sys.exit(1)
