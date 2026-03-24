@@ -1,7 +1,7 @@
 # CURRENT_STATE.md
 
-**最終更新**: 2026-03-24 (Session 3 — 全タスク完了)
-**最終 PR**: #20 (fix/supabase-409-err-trap)
+**最終更新**: 2026-03-24 (Session 4 — OpenHands E2E 動作確認完了)
+**最終 PR**: #22 (fix/issue-21-auto — OPEN_LOOPS.md OL-015 追加)
 
 ---
 
@@ -75,6 +75,28 @@ Exit codes: 0=success, 1=preflight, 2=generate failed, 3=validation failed, 4=un
 
 ---
 
+## OpenHands Issue Resolver (`.github/workflows/openhands.yml`)
+
+**Session 4 で E2E 動作確認済み**
+
+| 項目 | 状態 |
+|------|------|
+| トリガー | `issues: labeled (fix-me)` ✅ |
+| Claude API 呼び出し | `claude-3-haiku-20240307` ✅ |
+| ブランチ作成・push | `fix/issue-{N}-auto` ✅ |
+| PR 自動作成 | ✅ |
+| Issue コメント投稿 | ✅ |
+| fix-me ラベル自動除去 | ✅ |
+| 実行時間 | ~10秒（exit 143 問題: 完全解消） |
+
+**確認済みフロー（Session 4）:**
+- Issue #21 に `fix-me` ラベル → PR #22 自動作成 → main にマージ済み
+
+**使用モデル**: `claude-3-haiku-20240307`（$0.25/MTok — コスト最小）
+**実装方式**: stdlib のみ（`urllib.request`）— pip install ゼロ
+
+---
+
 ## Verified (all sessions)
 
 | Component | Status |
@@ -87,6 +109,7 @@ Exit codes: 0=success, 1=preflight, 2=generate failed, 3=validation failed, 4=un
 | write_run_state.py HTTP 409 handling | ✅ (PR #20) |
 | Full GitHub Actions pipeline end-to-end | ✅ (Run #3) |
 | Railway cron | 🟡 configured, awaiting natural trigger |
+| **OpenHands issue→PR loop** | **✅ (Session 4 — PR #22)** |
 
 ---
 
@@ -107,20 +130,8 @@ Exit codes: 0=success, 1=preflight, 2=generate failed, 3=validation failed, 4=un
 | #18 | state files Session 3 | ✅ |
 | #19 | missing plan files (module_map, agent flow, workflows, prompts) | ✅ |
 | #20 | ERR trap fix + Supabase 409 non-fatal | ✅ |
-
----
-
-## Session 3 Checklist — 全完了
-
-| # | Item | Status |
-|---|------|--------|
-| ① | ANTHROPIC_API_KEY (Railway + GitHub Secrets) | ✅ |
-| ② | GitHub Labels (fix-me, agent-dev etc.) | ✅ Haruki 完了 |
-| ③ | GitHub Secrets (全キー) | ✅ |
-| ④ | Supabase free tier cap 解消 | ✅ |
-| ⑤ | Railway cron 設定 | ✅ |
-| ⑥ | Marketing logs (`docs/marketing/logs/`, `weekly_kpi/`) | ✅ ベースライン記録済み (2026-03-24) |
-| ⑦ | OpenHands GitHub Action | ✅ Haruki 完了 |
+| #21 | marketing log baseline (2026-03-24) | ✅ |
+| #22 | OPEN_LOOPS.md OL-015 追加 (OpenHands E2E test) | ✅ |
 
 ---
 
