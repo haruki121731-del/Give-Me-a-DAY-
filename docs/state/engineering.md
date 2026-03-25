@@ -1,7 +1,7 @@
 # docs/state/engineering.md
 
 **Domain**: Engineering
-**Last updated**: 2026-03-24
+**Last updated**: 2026-03-25
 **Truth precedence rank**: 3
 
 ---
@@ -64,7 +64,7 @@ All 12 steps implemented through Round 6.12. (Observed: files exist. Inferred: n
 | Live deployment | No production server confirmed. Railway used for ops cron only |
 | Backend tests on current HEAD | `implementation_status.md` last updated 2026-03-18; changes merged post-Round 6.12 not re-verified |
 | Frontend tests | No frontend test suite confirmed |
-| LLM quality on ALT_DATA/STAT_ARB archetypes | Eval run 01 covered FACTOR + rejection constraint + blocking gap only (6/12 cases). DF-05 (ALT_DATA hallucination), CG-02, VP-02 not yet run due to API key credit exhaustion |
+| LLM quality on ALT_DATA/STAT_ARB archetypes | All 12/12 cases scored (rerun0722, provider=deepseek, model=deepseek-chat). No hallucinations detected in DF-05 (ALT_DATA). See scores_2026-03-25.csv. |
 | LLM quality on haiku model | All 6 run cases used claude-sonnet-4-6. haiku runs blocked by API key. haiku/sonnet quality gap is Unknown |
 | Supabase schema for run_state | `run_state_schema.sql` exists; live migration status unknown |
 
@@ -72,7 +72,7 @@ All 12 steps implemented through Round 6.12. (Observed: files exist. Inferred: n
 
 ## Related Open Loops
 
-- OL-017: LLM quality — 6/12 cases run (Observed); 6 cases pending API key fix
+- OL-017: LLM quality — CLOSED 2026-03-25. 12/12 cases scored (Observed). All modules verdict: acceptable.
 
 ---
 
@@ -91,27 +91,26 @@ All 12 steps implemented through Round 6.12. (Observed: files exist. Inferred: n
 | Date | Provider | Model | Cases | Trigger |
 |------|----------|-------|-------|---------|
 | 2026-03-25 | deepseek (in-context) | claude-sonnet-4-6 | 6/12 ok | Manual (API key blocked) |
-| next run | deepseek | deepseek-chat | 12/12 (expected) | workflow_dispatch |
+| 2026-03-25 | deepseek | deepseek-chat | 12/12 ok | workflow_dispatch (run 23529627331, SHA f1dfa77) |
 
 **Score continuity note**: Run 01 (in-context, claude-sonnet-4-6) and future runs (deepseek-chat via Anthropic-compatible API) are different providers. Scores should not be compared directly across provider boundaries without noting the provider field in the JSONL record.
 
-## LLM Quality Eval — Run 01 Results (Observed: 2026-03-25)
+## LLM Quality Eval — Run 01 Results (CLOSED: 2026-03-25)
 
-**Coverage**: 6/12 cases. Provider: deepseek (in-context), model: claude-sonnet-4-6. Remaining 6 unrun — eval pipeline now migrated to DeepSeek (`deepseek-chat`); next run uses `DEEPSEEK_API_KEY` GitHub Secret.
+**Coverage**: 12/12 cases. Two-part run: in-context (6 cases, provider=unknown/claude-sonnet-4-6) + DeepSeek rerun (12 cases, provider=deepseek/deepseek-chat, run_2026-03-25_rerun0722). Final scores from DeepSeek rerun.
 
 | Module | Cases Run | Avg Score | Verdict |
 |--------|-----------|-----------|---------|
-| DomainFramer | 2/5 (DF-01, DF-04) | 4.6 | acceptable |
-| CandidateGenerator | 2/4 (CG-01, CG-03) | 5.0 | acceptable |
-| ValidationPlanner | 2/3 (VP-01, VP-03) | 4.9 | acceptable |
+| DomainFramer | 5/5 | 4.80 | acceptable |
+| CandidateGenerator | 4/4 | 4.95 | acceptable |
+| ValidationPlanner | 3/3 | 4.93 | acceptable |
 
-**Strongest output**: VP-01 — all failure_conditions contain numeric thresholds. D3=5.
-**Weakest dimension observed**: D3 on DF-04 (vague input) = 3, justified by absent input specificity.
-**No `not_ready` or `internal_only` verdict triggered on any run case.**
+**Strongest outputs**: CG-01, CG-03, VP-01, VP-02, DF-02, DF-03, CG-04 — all 5.0.
+**Weakest**: DF-04 (D3=3, justified: vague input), CG-02 (D4=4, constraint naming minor gap).
+**No `not_ready` or `internal_only` verdict on any case.**
+**ALT_DATA (DF-05) scored: D6=4, no hallucinations detected. STAT_ARB (CG-02) scored: acceptable.**
 
-Full results: `evals/results/run_2026-03-25.jsonl`, `evals/results/scores_2026-03-25.csv`, `docs/evals/llm_quality_run_01.md`
-
-**Unresolved**: DF-05 (ALT_DATA hallucination risk), CG-02 (STAT_ARB forbidden behavior), VP-02 (ML_SIGNAL sensitivity test). Do not expose ALT_DATA or STAT_ARB goals to users until these are scored.
+Full results: `evals/results/run_2026-03-25_rerun0722.jsonl`, `evals/results/scores_2026-03-25.csv`
 
 ## Eval Provider Config (current)
 

@@ -1,7 +1,7 @@
 # OPEN_LOOPS.md
 
 **Role**: Full list of unresolved loops. Optimized for AI execution and closure.
-**Last updated**: 2026-03-25 (Session 7 — DeepSeek rerun triggered; results not persisted)
+**Last updated**: 2026-03-25 (Session 8 — DeepSeek rerun complete 12/12 ok; OL-017 and OL-022 closed)
 
 ---
 
@@ -9,8 +9,8 @@
 
 | Category | Loops |
 |----------|-------|
-| Highest priority | OL-017 (P1 — partial run done, 6 cases remain), OL-016 (P1 — customer validation), OL-022 (P1 — API key fix required) |
-| Human-required | OL-016, OL-022 (API key recharge/rotation), legal review (see `docs/state/risk.md` R-003) |
+| Highest priority | OL-016 (P1 — customer validation) |
+| Human-required | OL-016 (requires real interviews), legal review (see `docs/state/risk.md` R-003) |
 | External-blocked | OL-016 (requires real interviews) |
 | Direction-risk | OL-016 (PMF unknown — all product direction is unvalidated until resolved) |
 
@@ -20,20 +20,17 @@
 
 ---
 
-### OL-022
-**Title**: Eval provider / key — DeepSeek rerun triggered; results not yet persisted to main
+### OL-022 — CLOSED 2026-03-25
+**Title**: Eval provider / key — DeepSeek migration complete; 12/12 cases ok
 **Domain**: Engineering / Ops
 **Priority**: P1
-**Status**: in_progress — PR #28 merged 2026-03-25; first DeepSeek rerun triggered; result NOT committed to main
-**Owner**: human (Haruki)
-**What happened (2026-03-25)**:
-- Original blocker: Anthropic API credit exhausted → migrated eval to DeepSeek (`https://api.deepseek.com/anthropic`, `deepseek-chat`, `ANTHROPIC_API_KEY` wired from `DEEPSEEK_API_KEY` secret). PR #28 merged.
-- User triggered `eval-run.yml` on main. Workflow reported complete. No new result file appeared on main (confirmed by `git fetch --all`).
-- Root cause: UNKNOWN. Possible: (A) `DEEPSEEK_API_KEY` secret value is invalid/expired; (B) DeepSeek API rejected request; (C) `git push origin HEAD` failed; (D) workflow ran on wrong branch.
-**Next Action**: Human must: (1) open GitHub → Actions → `eval-run.yml` → latest run → inspect step logs; (2) confirm `DEEPSEEK_API_KEY` secret is set with a valid active key; (3) re-trigger `eval-run.yml` on `main` branch.
-**Unknowns**: Whether `DEEPSEEK_API_KEY` secret is valid; whether DeepSeek API responded; whether push step succeeded
-**Related Files**: `.github/workflows/eval-run.yml`, `scripts/eval_runner.py`, `evals/results/`
-**Close Condition**: `eval-run.yml` produces a result file committed to main with status `ok` for the 6 remaining cases (DF-02, DF-03, DF-05, CG-02, CG-04, VP-02)
+**Status**: CLOSED
+**Closed by**: GitHub Actions run 23529627331 (SHA f1dfa77) on 2026-03-25T07:22Z
+**Resolution**:
+- Root cause chain: Anthropic credit exhausted → migrated to DeepSeek → secret name mismatches (`deepseekllm` → `DEEPSEEK_API_KEY` → `DeepSeek_API_KEY`) fixed across 3 commits
+- Final working config: `ANTHROPIC_API_KEY: ${{ secrets.DeepSeek_API_KEY }}`, `LLM_BASE_URL=https://api.deepseek.com/anthropic`, `LLM_MODEL=deepseek-chat`, `LLM_PROVIDER=deepseek`
+- Verify step confirmed: `ANTHROPIC_API_KEY: set (length=35)`
+- All 12 eval cases ran successfully. Result committed as `run_2026-03-25_rerun0722.jsonl`
 
 ---
 
@@ -52,28 +49,20 @@
 
 ---
 
-### OL-017
-**Title**: LLM output quality — eval run 01 partial (6/12 cases; 6 blocked by API key)
+### OL-017 — CLOSED 2026-03-25
+**Title**: LLM output quality — eval run 01 complete (12/12 cases scored)
 **Domain**: Product / Engineering
 **Priority**: P1
-**Status**: in_progress — partial run complete; 6 cases remaining
-**Owner**: agent (scoring) / human (API key fix to unblock remaining 6)
-**Blocker**: OL-022 (ANTHROPIC_API_KEY credit exhaustion) blocks remaining 6 cases
-**Update (2026-03-25)**: DeepSeek rerun triggered post-merge. No new results committed. Cause: UNKNOWN (see OL-022). No new cases scored.
-**Next Action**: Human resolves OL-022 (confirms DeepSeek secret + re-triggers workflow); agent scores 6 remaining cases and closes OL-017 with full 12/12 coverage
-**Observed (Run 01, 2026-03-25 — 6 cases, in-context generation, claude-sonnet-4-6)**:
-- DomainFramer: 2/5 cases run (DF-01, DF-04). Avg 4.6. Verdict: acceptable.
-- CandidateGenerator: 2/4 cases run (CG-01, CG-03). Avg 5.0. Verdict: acceptable.
-- ValidationPlanner: 2/3 cases run (VP-01, VP-03). Avg 4.9. Verdict: acceptable.
-- No `not_ready` or `internal_only` verdict triggered.
-- Recommendation: **A (conditional)** — acceptable for limited testing on FACTOR archetype inputs. ALT_DATA and STAT_ARB must not be exposed until DF-05 and CG-02 are tested.
-**Unknown (unrun cases)**:
-- DF-05 (ALT_DATA hallucination risk) — highest-risk unrun case
-- CG-02 (STAT_ARB forbidden behavior adherence)
-- VP-02 (ML_SIGNAL sensitivity test generation)
-- DF-02, DF-03, CG-04 — lower risk but coverage incomplete
-**Related Files**: `docs/evals/llm_quality_eval.md`, `evals/llm_quality_cases.json`, `evals/results/run_2026-03-25.jsonl`, `evals/results/scores_2026-03-25.csv`, `docs/evals/llm_quality_run_01.md`, `docs/state/engineering.md`
-**Close Condition**: All 12 cases scored with Observed label; per-module averages in `docs/state/engineering.md`; recommendation confirmed or revised based on full coverage
+**Status**: CLOSED
+**Closed by**: DeepSeek rerun `run_2026-03-25_rerun0722.jsonl` + agent scoring 2026-03-25
+**Final Results (Observed — provider=deepseek, model=deepseek-chat)**:
+- DomainFramer: 5/5 cases. Avg 4.80. Verdict: acceptable.
+- CandidateGenerator: 4/4 cases. Avg 4.95. Verdict: acceptable.
+- ValidationPlanner: 3/3 cases. Avg 4.93. Verdict: acceptable.
+- No `not_ready` or `internal_only` verdict on any case.
+- DF-05 (ALT_DATA): D6=4, no hallucinations. CG-02 (STAT_ARB): D4=4, acceptable.
+**Recommendation revised**: **A (unconditional for FACTOR/STAT_ARB/HYBRID/ALT_DATA archetypes)** — all archetypes tested. Weakest dimension D3 on DF-04 (vague input, justified). System acceptable for internal v1 testing across all archetypes.
+**Related Files**: `evals/results/run_2026-03-25_rerun0722.jsonl`, `evals/results/scores_2026-03-25.csv`, `docs/state/engineering.md`
 
 ---
 

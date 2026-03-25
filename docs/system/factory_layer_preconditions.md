@@ -14,7 +14,7 @@ Do not begin factory-layer architecture work until all four conditions reach sta
 | ID | Condition | Status | Owner |
 |----|-----------|--------|-------|
 | C1 | OL-016 closed — ≥3 Mom Test interviews completed, findings recorded | **unmet** | Haruki |
-| C2 | OL-017 closed — all 12 eval cases scored, stable LLM quality baseline | **partially met** | Agent/Haruki |
+| C2 | OL-017 closed — all 12 eval cases scored, stable LLM quality baseline | **MET** | Agent/Haruki |
 | C3 | D-001 "minimum loop establishment" goal confirmed achieved and explicitly re-scoped | **unmet** | Haruki + Agent |
 | C4 | Factory files designed in isolated namespace without touching product scope | **unmet** | Agent (design, when C1–C3 met) |
 
@@ -56,13 +56,19 @@ Additionally: Risk 3 in REPO_FIT_ASSESSMENT.md flags eval scope confusion as a m
 - Recommendation confirmed or revised based on full 12/12 coverage (not just 6/12)
 - At least one full `eval-run.yml` workflow_dispatch run producing 12/12 ok results
 
-### Current status: PARTIALLY MET
-6/12 cases scored (Observed). Verdict on run cases: acceptable (avg 4.6–5.0). 6 cases blocked (DF-02, DF-03, DF-05, CG-02, CG-04, VP-02). Highest-risk cases (DF-05, CG-02, VP-02) not yet run.
+### Current status: MET — CLOSED 2026-03-25
+All 12/12 cases scored (Observed). Provider: deepseek, model: deepseek-chat. Run: `run_2026-03-25_rerun0722.jsonl` (GitHub Actions run 23529627331, SHA f1dfa77).
 
-**2026-03-25 update**: DeepSeek migration deployed (PR #28). First DeepSeek rerun triggered. Results NOT persisted to main — root cause UNKNOWN (see OL-022 for detail and next actions). C2 remains PARTIALLY MET.
+| Module | Cases | Avg Score | Verdict |
+|--------|-------|-----------|---------|
+| DomainFramer | 5/5 | 4.80 | acceptable |
+| CandidateGenerator | 4/4 | 4.95 | acceptable |
+| ValidationPlanner | 3/3 | 4.93 | acceptable |
+
+No `not_ready` or `internal_only` verdict on any case. DF-05 (ALT_DATA) and CG-02 (STAT_ARB) scored acceptable. Full baseline established.
 
 ### Concrete next action
-Haruki inspects Actions workflow log for last `eval-run.yml` run → identifies failure cause → confirms `DEEPSEEK_API_KEY` secret is valid → re-triggers `eval-run.yml` on main. Agent scores results and updates engineering.md.
+C2 is met. C1 (OL-016, Mom Test) and C3 (D-001 re-scope) remain unmet. Factory layer design blocked on C1 and C3.
 
 ---
 
