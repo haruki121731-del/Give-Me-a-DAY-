@@ -64,14 +64,15 @@ All 12 steps implemented through Round 6.12. (Observed: files exist. Inferred: n
 | Live deployment | No production server confirmed. Railway used for ops cron only |
 | Backend tests on current HEAD | `implementation_status.md` last updated 2026-03-18; changes merged post-Round 6.12 not re-verified |
 | Frontend tests | No frontend test suite confirmed |
-| Real LLM calls in pipeline | Tests use mocks/fallbacks; live LLM quality not validated end-to-end |
+| LLM quality on ALT_DATA/STAT_ARB archetypes | Eval run 01 covered FACTOR + rejection constraint + blocking gap only (6/12 cases). DF-05 (ALT_DATA hallucination), CG-02, VP-02 not yet run due to API key credit exhaustion |
+| LLM quality on haiku model | All 6 run cases used claude-sonnet-4-6. haiku runs blocked by API key. haiku/sonnet quality gap is Unknown |
 | Supabase schema for run_state | `run_state_schema.sql` exists; live migration status unknown |
 
 ---
 
 ## Related Open Loops
 
-- OL-017: LLM output quality verification — real runs not yet tested
+- OL-017: LLM quality — 6/12 cases run (Observed); 6 cases pending API key fix
 
 ---
 
@@ -82,6 +83,26 @@ All 12 steps implemented through Round 6.12. (Observed: files exist. Inferred: n
 | Backend test regression | Medium | Last verified 2026-03-18; changes since then not re-verified |
 | No production deployment | High | Product has no live users |
 | LLM API cost at scale | Medium | `claude-sonnet-4-20250514` per-call cost in full pipeline runs |
+
+---
+
+## LLM Quality Eval — Run 01 Results (Observed: 2026-03-25)
+
+**Coverage**: 6/12 cases. Model: claude-sonnet-4-6 (production model). Remaining 6 blocked by ANTHROPIC_API_KEY credit exhaustion.
+
+| Module | Cases Run | Avg Score | Verdict |
+|--------|-----------|-----------|---------|
+| DomainFramer | 2/5 (DF-01, DF-04) | 4.6 | acceptable |
+| CandidateGenerator | 2/4 (CG-01, CG-03) | 5.0 | acceptable |
+| ValidationPlanner | 2/3 (VP-01, VP-03) | 4.9 | acceptable |
+
+**Strongest output**: VP-01 — all failure_conditions contain numeric thresholds. D3=5.
+**Weakest dimension observed**: D3 on DF-04 (vague input) = 3, justified by absent input specificity.
+**No `not_ready` or `internal_only` verdict triggered on any run case.**
+
+Full results: `evals/results/run_2026-03-25.jsonl`, `evals/results/scores_2026-03-25.csv`, `docs/evals/llm_quality_run_01.md`
+
+**Unresolved**: DF-05 (ALT_DATA hallucination risk), CG-02 (STAT_ARB forbidden behavior), VP-02 (ML_SIGNAL sensitivity test). These are the highest-risk unrun cases. Do not expose ALT_DATA or STAT_ARB goals to users until these are scored.
 
 ---
 

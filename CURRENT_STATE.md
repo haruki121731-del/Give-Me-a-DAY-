@@ -2,7 +2,7 @@
 
 **Role**: Parent index. Short overview by domain. Pointer map to detail files.
 **Truth precedence rank**: (inherits from `docs/state/*.md` — rank 3)
-**Last updated**: 2026-03-24 (Session 5 — eval package)
+**Last updated**: 2026-03-25 (Session 6 — eval run 01)
 
 For rules and mission: → `SYSTEM_PRINCIPLES.md`
 For decisions: → `DECISIONS.md`
@@ -14,7 +14,7 @@ For decisions: → `DECISIONS.md`
 | Domain | State | Detail |
 |--------|-------|--------|
 | Product | v1 spec complete, backend implemented, no live users | → `docs/state/product.md` |
-| Engineering | Rounds 1–6.12 complete, CI green; eval framework defined, first run pending | → `docs/state/engineering.md` |
+| Engineering | Rounds 1–6.12 complete, CI green; eval run 01 partial (6/12 Observed, acceptable); 6 cases blocked by API key exhaustion | → `docs/state/engineering.md` |
 | Ops | ops/run.sh confirmed Run #3; Railway cron natural trigger unconfirmed | → `docs/state/ops.md` |
 | Marketing | Internal only, all external channels zero | → `docs/state/marketing.md` |
 | Agent Governance | 3 agents defined, guardrails active | → `docs/state/agent_governance.md` |
@@ -26,10 +26,11 @@ For decisions: → `DECISIONS.md`
 
 | # | Item | Owner | State file |
 |---|------|-------|------------|
-| 1 | No live users — PMF entirely unvalidated | human | `docs/state/product.md` |
-| 2 | Railway cron: configured, natural trigger unconfirmed | agent detect | `docs/state/ops.md` |
-| 3 | Marketing: zero external activity | human | `docs/state/marketing.md` |
-| 4 | Legal review: investment product, no review done | human | `docs/state/risk.md` |
+| 1 | ANTHROPIC_API_KEY credit exhausted — 6 eval cases blocked | **human (Haruki)** | OL-022 |
+| 2 | No live users — PMF entirely unvalidated | human | `docs/state/product.md` |
+| 3 | Railway cron: configured, natural trigger unconfirmed | agent detect | `docs/state/ops.md` |
+| 4 | Marketing: zero external activity | human | `docs/state/marketing.md` |
+| 5 | Legal review: investment product, no review done | human | `docs/state/risk.md` |
 
 ---
 
@@ -41,12 +42,24 @@ Currently open:
 
 | ID | Title | Priority | Owner |
 |----|-------|----------|-------|
-| OL-021 | LLM eval package — PR open, first run pending | P1 | agent/human |
-| OL-017 | LLM first eval run (framework defined, not yet executed) | P1 | agent |
+| OL-022 | ANTHROPIC_API_KEY credit exhausted — eval blocked | P1 | **human (Haruki)** |
+| OL-017 | LLM eval run 01 partial — 6/12 done, 6 remaining | P1 | agent/human |
 | OL-016 | Mom Test / customer validation | P1 | human |
 | OL-019 | Railway cron natural trigger confirmation | P2 | agent |
 
 ---
+
+## Recent Changes (Session 6 — eval run 01)
+
+- PR #25 (eval package), PR #26/#27 (eval runner) merged to main
+- OL-021 closed: eval package delivered and first run executed
+- Eval run 01 executed: 6/12 cases scored in-context (claude-sonnet-4-6); 6 cases blocked by ANTHROPIC_API_KEY exhaustion
+- Results: DomainFramer 4.6, CandidateGenerator 5.0, ValidationPlanner 4.9 — all **acceptable**
+- Recommendation: **A (conditional)** — limited testing permitted on FACTOR archetype inputs
+- OL-022 opened: ANTHROPIC_API_KEY credit exhaustion (human action required)
+- OL-017 narrowed: partial Observed results recorded; still open for remaining 6 cases
+- New files: `evals/results/run_2026-03-25.jsonl`, `evals/results/scores_2026-03-25.csv`, `docs/evals/llm_quality_run_01.md`
+- `docs/state/engineering.md` updated with eval run 01 results section
 
 ## Recent Changes (Session 5 — eval package)
 

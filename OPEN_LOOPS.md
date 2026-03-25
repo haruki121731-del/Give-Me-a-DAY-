@@ -1,7 +1,7 @@
 # OPEN_LOOPS.md
 
 **Role**: Full list of unresolved loops. Optimized for AI execution and closure.
-**Last updated**: 2026-03-24 (Session 5 — eval package)
+**Last updated**: 2026-03-25 (Session 6 — eval run 01)
 
 ---
 
@@ -9,8 +9,8 @@
 
 | Category | Loops |
 |----------|-------|
-| Highest priority | OL-017 (P1 — eval package merged, first run now executable), OL-016 (P1 — customer validation) |
-| Human-required | OL-016, OL-021 (merge), legal review (see `docs/state/risk.md` R-003) |
+| Highest priority | OL-017 (P1 — partial run done, 6 cases remain), OL-016 (P1 — customer validation), OL-022 (P1 — API key fix required) |
+| Human-required | OL-016, OL-022 (API key recharge/rotation), legal review (see `docs/state/risk.md` R-003) |
 | External-blocked | OL-016 (requires real interviews) |
 | Direction-risk | OL-016 (PMF unknown — all product direction is unvalidated until resolved) |
 
@@ -20,17 +20,17 @@
 
 ---
 
-### OL-021
-**Title**: LLM eval package — open PR, awaiting merge + first run
-**Domain**: Engineering / Product
+### OL-022
+**Title**: ANTHROPIC_API_KEY in GitHub Secrets — credit exhausted
+**Domain**: Engineering / Ops
 **Priority**: P1
-**Status**: in_progress
-**Owner**: agent (setup) / human (merge + first run trigger)
-**Blocker**: PR merge pending
-**Next Action**: Human merges `feat/eval-layer` PR; agent runs first eval pass using `docs/evals/llm_quality_eval.md` procedure; records results in `evals/results/`
-**Unknowns**: DomainFramer and CandidateGenerator actual scores; whether any module is in `not_ready` state; ValidationPlanner falsifiability quality
-**Related Files**: `docs/evals/llm_quality_eval.md`, `evals/llm_quality_cases.json`, `evals/results/README.md`, `docs/state/engineering.md`
-**Close Condition**: First eval run complete; per-module scores recorded in `evals/results/scores_YYYY-MM-DD.csv`; `docs/state/engineering.md` updated with Observed labels
+**Status**: open
+**Owner**: human (Haruki)
+**Blocker**: `for openhands` key in `Give Me a DAY` Anthropic workspace has zero credit balance (confirmed: GitHub Actions eval-run.yml run returned 400 error on all 12 cases 2026-03-25)
+**Next Action**: Haruki must either (a) recharge the `for openhands` key in the `Give Me a DAY` Anthropic workspace, OR (b) create a new API key and update `ANTHROPIC_API_KEY` in GitHub repository secrets. After resolving: trigger `eval-run.yml` via workflow_dispatch to run remaining 6 eval cases.
+**Unknowns**: Whether recharge or rotation is faster; whether other GitHub Actions workflows are also blocked
+**Related Files**: `.github/workflows/eval-run.yml`, `scripts/eval_runner.py`, `evals/results/`
+**Close Condition**: `eval-run.yml` triggers successfully and produces results for all 12 cases with status `ok`
 
 ---
 
@@ -50,22 +50,26 @@
 ---
 
 ### OL-017
-**Title**: LLM output quality — first eval run (eval package now exists)
+**Title**: LLM output quality — eval run 01 partial (6/12 cases; 6 blocked by API key)
 **Domain**: Product / Engineering
 **Priority**: P1
-**Status**: open — eval framework defined, first run not yet executed
-**Owner**: agent
-**Blocker**: OL-021 (eval PR merge) must complete first
-**Next Action**: After OL-021 merged, agent executes first eval run per `docs/evals/llm_quality_eval.md` procedure; records raw outputs in `evals/results/run_YYYY-MM-DD.jsonl` and scores in `evals/results/scores_YYYY-MM-DD.csv`
-**Unknowns**: DomainFramer D3 (falsifiability) score; CandidateGenerator D5 (diversity) score; ValidationPlanner D3 (failure conditions) score; hallucination rate on ALT_DATA and ML_SIGNAL archetypes
-**What is now defined (Observed as of 2026-03-24)**:
-- Eval target: DomainFramer, CandidateGenerator, ValidationPlanner
-- Rubric: 6 dimensions (D1–D6), 1–5 scale
-- Test set: 12 cases across 3 modules in `evals/llm_quality_cases.json`
-- Procedure: manual-first; records in `evals/results/`
-- Thresholds: not_ready / internal_only / acceptable / ready defined
-**Related Files**: `docs/evals/llm_quality_eval.md`, `evals/llm_quality_cases.json`, `evals/results/README.md`, `docs/state/engineering.md`
-**Close Condition**: First eval run complete; all 12 cases scored; per-module averages recorded with Observed label in `docs/state/engineering.md`
+**Status**: in_progress — partial run complete; 6 cases remaining
+**Owner**: agent (scoring) / human (API key fix to unblock remaining 6)
+**Blocker**: OL-022 (ANTHROPIC_API_KEY credit exhaustion) blocks remaining 6 cases
+**Next Action**: Human resolves OL-022; agent triggers `eval-run.yml` via workflow_dispatch; agent scores remaining cases and closes OL-017 with full 12/12 coverage
+**Observed (Run 01, 2026-03-25 — 6 cases, in-context generation, claude-sonnet-4-6)**:
+- DomainFramer: 2/5 cases run (DF-01, DF-04). Avg 4.6. Verdict: acceptable.
+- CandidateGenerator: 2/4 cases run (CG-01, CG-03). Avg 5.0. Verdict: acceptable.
+- ValidationPlanner: 2/3 cases run (VP-01, VP-03). Avg 4.9. Verdict: acceptable.
+- No `not_ready` or `internal_only` verdict triggered.
+- Recommendation: **A (conditional)** — acceptable for limited testing on FACTOR archetype inputs. ALT_DATA and STAT_ARB must not be exposed until DF-05 and CG-02 are tested.
+**Unknown (unrun cases)**:
+- DF-05 (ALT_DATA hallucination risk) — highest-risk unrun case
+- CG-02 (STAT_ARB forbidden behavior adherence)
+- VP-02 (ML_SIGNAL sensitivity test generation)
+- DF-02, DF-03, CG-04 — lower risk but coverage incomplete
+**Related Files**: `docs/evals/llm_quality_eval.md`, `evals/llm_quality_cases.json`, `evals/results/run_2026-03-25.jsonl`, `evals/results/scores_2026-03-25.csv`, `docs/evals/llm_quality_run_01.md`, `docs/state/engineering.md`
+**Close Condition**: All 12 cases scored with Observed label; per-module averages in `docs/state/engineering.md`; recommendation confirmed or revised based on full coverage
 
 ---
 
@@ -105,3 +109,4 @@
 | OL-015 | OpenHands E2E test | 2026-03-24 | PR #22 merged (Session 4) |
 | OL-018 | CI green confirmation on latest HEAD | 2026-03-24 | CI run 23493826997: Frontend Build ✅ + Backend Tests ✅ on feat/state-architecture-v1 tip bdb668fa5 (same app code as main) |
 | OL-020 | State architecture + grounding audit (two open PRs) | 2026-03-24 | PR #23 (state arch) + PR #24 (grounding audit) both merged to main |
+| OL-021 | LLM eval package — open PR, awaiting merge + first run | 2026-03-25 | PR #25 (eval package), PR #26/#27 (eval runner) merged; first run executed (6/12 Observed); OL-017 continues for remaining 6 |
