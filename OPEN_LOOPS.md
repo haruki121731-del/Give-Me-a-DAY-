@@ -1,7 +1,7 @@
 # OPEN_LOOPS.md
 
 **Role**: Full list of unresolved loops. Optimized for AI execution and closure.
-**Last updated**: 2026-03-24 (Session 4)
+**Last updated**: 2026-03-24 (Session 5 — eval package)
 
 ---
 
@@ -9,8 +9,8 @@
 
 | Category | Loops |
 |----------|-------|
-| Highest priority | OL-020 (P0 — state architecture), OL-016 (P1 — customer validation) |
-| Human-required | OL-016, OL-020 (merge), legal review (see `docs/state/risk.md` R-003) |
+| Highest priority | OL-017 (P1 — eval package merged, first run now executable), OL-016 (P1 — customer validation) |
+| Human-required | OL-016, OL-021 (merge), legal review (see `docs/state/risk.md` R-003) |
 | External-blocked | OL-016 (requires real interviews) |
 | Direction-risk | OL-016 (PMF unknown — all product direction is unvalidated until resolved) |
 
@@ -20,17 +20,17 @@
 
 ---
 
-### OL-020
-**Title**: State architecture implementation (this PR)
-**Domain**: Engineering / Docs
-**Priority**: P0
+### OL-021
+**Title**: LLM eval package — open PR, awaiting merge + first run
+**Domain**: Engineering / Product
+**Priority**: P1
 **Status**: in_progress
-**Owner**: agent
-**Blocker**: None — PR open, awaiting human merge
-**Next Action**: Human reviews and merges `feat/state-architecture-v1` PR
-**Unknowns**: None — all files created per spec
-**Related Files**: `SYSTEM_PRINCIPLES.md`, `docs/state/`, `CURRENT_STATE.md`, `OPEN_LOOPS.md`, `SESSION_HANDOFF.md`
-**Close Condition**: PR merged to main; all spec files present and role-correct
+**Owner**: agent (setup) / human (merge + first run trigger)
+**Blocker**: PR merge pending
+**Next Action**: Human merges `feat/eval-layer` PR; agent runs first eval pass using `docs/evals/llm_quality_eval.md` procedure; records results in `evals/results/`
+**Unknowns**: DomainFramer and CandidateGenerator actual scores; whether any module is in `not_ready` state; ValidationPlanner falsifiability quality
+**Related Files**: `docs/evals/llm_quality_eval.md`, `evals/llm_quality_cases.json`, `evals/results/README.md`, `docs/state/engineering.md`
+**Close Condition**: First eval run complete; per-module scores recorded in `evals/results/scores_YYYY-MM-DD.csv`; `docs/state/engineering.md` updated with Observed labels
 
 ---
 
@@ -50,30 +50,22 @@
 ---
 
 ### OL-017
-**Title**: LLM output quality verification (real pipeline runs)
+**Title**: LLM output quality — first eval run (eval package now exists)
 **Domain**: Product / Engineering
-**Priority**: P2
-**Status**: open
+**Priority**: P1
+**Status**: open — eval framework defined, first run not yet executed
 **Owner**: agent
-**Blocker**: No production deployment; no real user inputs to test against
-**Next Action**: Agent runs pipeline with representative real-world investment goals; records output quality in `docs/state/engineering.md`
-**Unknowns**: DomainFramer and CandidateGenerator output quality on real inputs; LLM hallucination rate; fallback trigger rate
-**Related Files**: `docs/state/engineering.md`, `backend/src/pipeline/domain_framer.py`, `backend/src/pipeline/candidate_generator.py`
-**Close Condition**: ≥ 3 representative goals processed end-to-end; quality assessment recorded with Observed evidence label
-
----
-
-### OL-018
-**Title**: CI green confirmation on latest HEAD
-**Domain**: Engineering
-**Priority**: P2
-**Status**: open
-**Owner**: agent
-**Blocker**: None — can be triggered by agent via PR
-**Next Action**: Agent opens a no-op PR to trigger CI; records result in `docs/state/engineering.md`
-**Unknowns**: `backend/tests/` pass/fail on current HEAD; any regressions since Round 6.12
-**Related Files**: `docs/state/engineering.md`, `.github/workflows/pr-build.yml`
-**Close Condition**: CI run completes green on current HEAD; result recorded with Observed label
+**Blocker**: OL-021 (eval PR merge) must complete first
+**Next Action**: After OL-021 merged, agent executes first eval run per `docs/evals/llm_quality_eval.md` procedure; records raw outputs in `evals/results/run_YYYY-MM-DD.jsonl` and scores in `evals/results/scores_YYYY-MM-DD.csv`
+**Unknowns**: DomainFramer D3 (falsifiability) score; CandidateGenerator D5 (diversity) score; ValidationPlanner D3 (failure conditions) score; hallucination rate on ALT_DATA and ML_SIGNAL archetypes
+**What is now defined (Observed as of 2026-03-24)**:
+- Eval target: DomainFramer, CandidateGenerator, ValidationPlanner
+- Rubric: 6 dimensions (D1–D6), 1–5 scale
+- Test set: 12 cases across 3 modules in `evals/llm_quality_cases.json`
+- Procedure: manual-first; records in `evals/results/`
+- Thresholds: not_ready / internal_only / acceptable / ready defined
+**Related Files**: `docs/evals/llm_quality_eval.md`, `evals/llm_quality_cases.json`, `evals/results/README.md`, `docs/state/engineering.md`
+**Close Condition**: First eval run complete; all 12 cases scored; per-module averages recorded with Observed label in `docs/state/engineering.md`
 
 ---
 
@@ -84,10 +76,11 @@
 **Status**: open
 **Owner**: agent (detect) / human (respond)
 **Blocker**: Waiting for UTC 00:00 natural trigger on Railway
-**Next Action**: Agent checks Railway logs after next UTC 00:00; records result in `docs/state/ops.md`
-**Unknowns**: Whether Railway cron fires correctly; whether `ops/run.sh` exits 0 on Railway environment
-**Related Files**: `docs/state/ops.md`, `ops/run.sh`
-**Close Condition**: At least 1 successful natural Railway cron run confirmed; exit code and report file existence verified
+**Next Action**: Agent checks Railway logs after next UTC 00:00; records exit code and trigger event type in `docs/state/ops.md`
+**Unknowns**: Whether Railway cron fires `bash ops/run.sh` correctly; whether exit code is 0 on Railway environment; whether generated report is pushed to repo
+**Observed so far**: Last 10 checked `daily-report.yml` GitHub Actions runs show only `push` / `pull_request` event types — no `schedule`-triggered run confirmed. Railway cron configured as `bash ops/run.sh` (not GitHub Actions).
+**Related Files**: `docs/state/ops.md`, `ops/run.sh`, Railway dashboard
+**Close Condition**: At least 1 natural Railway cron run confirmed with exit code 0 and report file in `docs/reports/daily/`; result recorded with Observed label
 
 ---
 
@@ -110,3 +103,5 @@
 | OL-013 | Supabase free tier cap | 2026-03-24 | Inactive project deleted; active project confirmed |
 | OL-014 | Unpushed commits / unstaged changes on main | 2026-03-24 | PRs #15, #16 |
 | OL-015 | OpenHands E2E test | 2026-03-24 | PR #22 merged (Session 4) |
+| OL-018 | CI green confirmation on latest HEAD | 2026-03-24 | CI run 23493826997: Frontend Build ✅ + Backend Tests ✅ on feat/state-architecture-v1 tip bdb668fa5 (same app code as main) |
+| OL-020 | State architecture + grounding audit (two open PRs) | 2026-03-24 | PR #23 (state arch) + PR #24 (grounding audit) both merged to main |
