@@ -1,0 +1,45 @@
+name: LLM Quality Eval Run
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          fetch-depth: 1
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install anthropic
+        run: pip install anthropic pydantic pydantic-settings
+
+      - name: Run eval
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          cd ${{ github.workspace }}
+          PYTHONPATH=backend/src python3 scripts/eval_runner.py
+
+      - name: Commit results
+        run: |
+          git config user.email "haruki121731@icloud.com"
+          git config user.name "Haruki"
+          git add evals/results/
+          if git diff --cached --quiet; then
+            echo "No new results to commit"
+          else
+            git commit -m "chore: eval run results $(date -u +%Y-%m-%d)"
+            git push
+          fi
